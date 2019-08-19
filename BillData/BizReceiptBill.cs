@@ -1,4 +1,5 @@
-﻿using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Data;
+using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
@@ -17,7 +18,7 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Construct
-        public BizReceiptBill() : base() { }
+        public BizReceiptBill(MessageLog message) : base(message) { }
         #endregion
 
         #region Public

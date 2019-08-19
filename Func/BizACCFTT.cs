@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
@@ -11,7 +12,7 @@ namespace SKGPortalCore.Business.Func
 {
     public class BizACCFTT : BizBase
     {
-        public BizACCFTT(DbContext db) : base(db) { }
+        public BizACCFTT(MessageLog message, ApplicationDbContext db) : base(message, db) { }
 
         #region Public
         public void SyncACCFTT()

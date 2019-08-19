@@ -73,7 +73,7 @@ namespace SKGPortalCore.Business.Func
             var session = (ISessionWapper)context.UserContext;
             if (!CheckAuthenticate(session.SessionId, context.GetArgument<string>("jWT"), claimType, claimValue))
             {
-                LogHelper log = new LogHelper(context.Errors);
+                MessageLog log = new MessageLog(context.Errors);
                 log.AddErrorMessage(MessageCode.Code0002, ResxManage.GetDescription(FuncAction.Query));
                 return false;
             }

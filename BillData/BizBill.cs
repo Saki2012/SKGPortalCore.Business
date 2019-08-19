@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Models.BillData;
 using System.Collections.Generic;
-
+using System.Linq;
 namespace SKGPortalCore.Business.BillData
 {
     /// <summary>
@@ -18,15 +19,16 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Construct
-        public BizBill(DbContext dataAccess = null, IUserModel user = null) : base(dataAccess, user) { }
+        public BizBill(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
         #endregion
 
         #region Public
+        //保存前
         public void CheckData(BillSet set)
         {
-            CheckBankCodeExist(set.Bill);
             ConditionRequireFields(set.Bill);
             ConditionRequireFields(set.BillDetail);
+            CheckBankCodeExist(set.Bill);
         }
         public void SetData(BillSet set)
         {
@@ -42,19 +44,6 @@ namespace SKGPortalCore.Business.BillData
                 set.Bill.HasPayAmount += detail.ReceiptBill.PayAmount;
             }
             set.Bill.PayStatus = GetPayStatus(set.Bill.PayAmount, set.Bill.HasPayAmount);
-        }
-        /// <summary>
-        /// 匯入帳單(Excel匯入)
-        /// </summary>
-        public void ImportExcelBill()
-        {
-            //解析Excel
-            //塞入Set
-            List<BillSet> sets = new List<BillSet>();
-            //SaveData
-            //BillRepository repo = new BillRepository(DB);
-            //foreach (var set in sets)
-            //    repo.Create(set);
         }
         #endregion
 
@@ -206,7 +195,11 @@ namespace SKGPortalCore.Business.BillData
         /// <returns></returns>
         private bool CheckBankCodeExist(BillModel bill)
         {
-            return bill.BankCode == "" && bill.BillNo != "";
+            BillModel result = DataAccess.Bill.FirstOrDefault(p =>
+              p.BillNo != bill.BillNo
+              && p.BankCode == bill.BankCode
+              && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved));
+            return null != result;
         }
         /// <summary>
         /// 檢查欄位是否必填(表頭)
@@ -398,6 +391,9 @@ namespace SKGPortalCore.Business.BillData
             else
                 return PayStatus.OverPaid;
         }
+        #endregion
+
+        #region DataAccess
         #endregion
     }
 }

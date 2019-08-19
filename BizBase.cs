@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GraphQL;
+using Microsoft.EntityFrameworkCore;
+using SKGPortalCore.Data;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using System;
 
@@ -8,12 +10,14 @@ namespace SKGPortalCore.Business
     {
         #region Property
         protected IUserModel User { get; set; }
-        protected DbContext DataAccess { get; }
+        protected ApplicationDbContext DataAccess { get; }
+        protected MessageLog Message { get; }
         #endregion
 
         #region Construct
-        public BizBase(DbContext dataAccess = null, IUserModel user = null)
+        public BizBase(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null)
         {
+            Message = message;
             DataAccess = dataAccess;
             User = user ?? new SystemOperator().SysOperator;
         }

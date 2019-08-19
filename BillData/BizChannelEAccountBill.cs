@@ -1,11 +1,12 @@
-﻿using SKGPortalCore.Model.BillData;
+﻿using SKGPortalCore.Data;
+using SKGPortalCore.Model.BillData;
 
 namespace SKGPortalCore.Business.BillData
 {
     public class BizChannelEAccountBill : BizBase
     {
         #region Construct
-        public BizChannelEAccountBill() : base() { }
+        public BizChannelEAccountBill(MessageLog message) : base(message) { }
         #endregion
 
         #region Public

@@ -1,4 +1,5 @@
-﻿using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Data;
+using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using System.Collections.Generic;
 
@@ -10,7 +11,7 @@ namespace SKGPortalCore.Business.BillData
     public class BizChannelWriteOfBill : BizBase
     {
         #region Public
-
+        public BizChannelWriteOfBill(MessageLog message) : base(message) { }
         #endregion
 
         #region Private
