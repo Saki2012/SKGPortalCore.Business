@@ -2,6 +2,7 @@
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
+using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Models.BillData;
 using System.Collections.Generic;
@@ -23,17 +24,17 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Public
-        //保存前
-        public void CheckData(BillSet set)
+        /// <summary>
+        /// 設置欄位
+        /// </summary>
+        /// <param name="set"></param>
+        /// <param name="action"></param>
+        public void SetData(BillSet set, FuncAction action)
         {
-            ConditionRequireFields(set.Bill);
-            ConditionRequireFields(set.BillDetail);
-            CheckBankCodeExist(set.Bill);
-        }
-        public void SetData(BillSet set)
-        {
+            if (action == FuncAction.Create)
+                SetBarCode(set.Bill);
+
             set.Bill.PayAmount = 0m;
-            SetBarCode(set.Bill);
             foreach (var detail in set.BillDetail)
             {
                 set.Bill.PayAmount += detail.PayAmount;
@@ -45,87 +46,104 @@ namespace SKGPortalCore.Business.BillData
             }
             set.Bill.PayStatus = GetPayStatus(set.Bill.PayAmount, set.Bill.HasPayAmount);
         }
+        /// <summary>
+        /// 檢查欄位
+        /// </summary>
+        /// <param name="set"></param>
+        public void CheckData(BillSet set)
+        {
+            if (set.Bill.BizCustomer.VirtualAccountLen != set.Bill.BankBarCode.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
+            if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.BankCode); }
+        }
         #endregion
 
         #region Private
         /// <summary>
-        /// 
+        /// 設置條碼編碼
         /// </summary>
         /// <param name="bill"></param>
         private void SetBarCode(BillModel bill)
         {
             bill.BankCode = GetBankCode(bill);
+            //銀行：
             bill.BankBarCode = GetBankBarCode(bill);
-            bill.MarketBarCode1 = GetMarketBarCode1(bill);
-            bill.MarketBarCode2 = GetMarketBarCode2(bill);
-            bill.MarketBarCode3 = GetMarketBarCode3(bill);
-            //bill.BankCode = GetMarketCompareCode(bill);
-            bill.PostBarCode1 = GetPostBarCode1(bill);
-            bill.PostBarCode2 = GetPostBarCode2(bill);
-            bill.PostBarCode3 = GetPostBarCode3(bill);
-            //bill.PostCompareCode = GetPostCompareCode(bill);
+            //超商：
+            string collectionTypeId = GetCollectionTypeId(bill);
+            bill.MarketBarCode1 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode1(bill, collectionTypeId) : string.Empty;
+            bill.MarketBarCode2 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode2(bill) : string.Empty;
+            bill.MarketBarCode3 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode3(bill) : string.Empty;
+            //郵局：應判斷Channel是否包含郵局類型的通路?
+            bill.PostBarCode1 = bill.PayAmount > 0 ? GetPostBarCode1() : string.Empty;
+            bill.PostBarCode3 = bill.PayAmount > 0 ? GetPostBarCode3(bill) : string.Empty;
+            bill.PostBarCode2 = bill.PayAmount > 0 ? GetPostBarCode2(bill) : string.Empty;
         }
-        /// 設置銀行銷帳編號
+        /// <summary>
+        /// 獲取銀行銷帳編號
         /// </summary>
+        /// <param name="bill"></param>
         /// <returns></returns>
         private string GetBankCode(BillModel bill)
         {
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
-            //if(VirtualAccount1.BillTermId)
-            vir1 = bill.BillTermId.PadLeft(bill.Customer.BillTermLen, '0');
-
-            //if(VirtualAccount2.PayerNo)
-            vir2 = bill.PayerId.PadLeft(bill.Customer.PayerNoLen, '0');
-            //else if(VirtualAccount2.Seq)
-            //vir2=//序號
-
-            //if(VirtualAccount3.SeqPayEndDate||VirtualAccount3.SeqAmountPayEndDate)
-            vir3 = $"{bill.PayEndDate.Year}{bill.PayEndDate.DayOfYear.ToString().PadLeft(3, '0')}";
-
-            //bill.BankCode = $"{vir3}{vir1}{vir2}";
+            switch (bill.BizCustomer.VirtualAccount1)
+            {
+                case VirtualAccount1.BillTerm:
+                    vir1 = bill.BillTerm.BillTermNo.PadLeft(bill.Customer.BillTermLen, '0');
+                    break;
+            }
+            switch (bill.BizCustomer.VirtualAccount2)
+            {
+                case VirtualAccount2.PayerNo:
+                    vir2 = bill.Payer.PayerNo.PadLeft(bill.Customer.PayerNoLen, '0');
+                    break;
+                case VirtualAccount2.Seq:
+                    BillTermModel billTerm = DataAccess.Find<BillTermModel>(bill.BillTermId);
+                    vir2 = (++billTerm.Seq).ToString().PadLeft(bill.Customer.PayerNoLen, '0');
+                    DataAccess.Update(billTerm);
+                    break;
+            }
+            switch (bill.BizCustomer.VirtualAccount3)
+            {
+                case VirtualAccount3.SeqPayEndDate:
+                case VirtualAccount3.SeqAmountPayEndDate:
+                    //西元年末碼(1碼)+天數(3碼)
+                    vir3 = bill.PayEndDate.Year.ToString().Substring(3, 1) + bill.PayEndDate.DayOfYear.ToString().PadLeft(3, '0');
+                    break;
+            }
             return $"{vir3}{vir1}{vir2}";
         }
         /// <summary>
-        /// 設置銀行條碼
+        /// 獲取銀行條碼
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
         private string GetBankBarCode(BillModel bill)
         {
-            VirtualAccount3 x = VirtualAccount3.NoverifyCode;
-            string result;
-            switch (x)
+            switch (bill.BizCustomer.VirtualAccount3)
             {
                 case VirtualAccount3.NoverifyCode:
-                    result = bill.BankCode;
-                    break;
+                    return bill.BankCode;
                 case VirtualAccount3.Seq:
                 case VirtualAccount3.SeqPayEndDate:
-                    result = bill.BankCode + GetBankCheckCodeSeq(bill.BankCode);
-                    break;
+                    return bill.BankCode + GetBankCheckCodeSeq(bill.BankCode);
                 case VirtualAccount3.SeqAmount:
                 case VirtualAccount3.SeqAmountPayEndDate:
-                    result = bill.BankCode + GetBankCheckCodeSeqAmount(bill.BankCode, bill.PayAmount.ToInt32());
-                    break;
+                    return bill.BankCode + GetBankCheckCodeSeqAmount(bill.BankCode, bill.PayAmount > 0 ? bill.PayAmount.ToInt32() : 0);
                 default:
-                    result = string.Empty;
-                    break;
+                    return string.Empty;
             }
-            //bill.BankBarCode = result;
-            return result;
         }
         /// <summary>
-        /// 設置超商條碼1
+        /// 獲取超商條碼1
         /// 代收期限(民國年yymmdd)(6碼) + 代收項目 (3碼)
         /// </summary>
         /// <returns></returns>
-        private string GetMarketBarCode1(BillModel bill)
+        private string GetMarketBarCode1(BillModel bill, string collectionTypeId)
         {
-            bill.MarketBarCode1 = bill.PayEndDate.ToROCDate().Substring(1) + "代收類別名稱(6V1)";
-            return "";
+            return bill.PayEndDate.ToROCDate().Substring(1) + collectionTypeId;
         }
         /// <summary>
-        /// 設置超商條碼2
+        /// 獲取超商條碼2
         /// 銀行條碼(16碼，靠左補零)
         /// </summary>
         /// <returns></returns>
@@ -134,36 +152,27 @@ namespace SKGPortalCore.Business.BillData
             return bill.BankBarCode.PadLeft(16, '0');
         }
         /// <summary>
-        /// 設置超商條碼3
+        /// 獲取超商條碼3
         /// 應繳年月(4碼) + 檢碼(2) + 應繳金額(9碼，靠左補零)
         /// </summary>
         /// <returns></returns>
         private string GetMarketBarCode3(BillModel bill)
         {
-            bill.MarketBarCode3 = bill.MarketBarCode1.Substring(0, 4) +
-                GetMarketCheckCode(bill.MarketBarCode1, bill.MarketBarCode2, bill.MarketBarCode1.Substring(0, 4), bill.PayAmount.ToInt32())
-                + bill.PayAmount.ToString("D").PadLeft(9, '0');
-            return "";
+            return bill.MarketBarCode1.Substring(0, 4)
+                + GetMarketCheckCode(bill.MarketBarCode1, bill.MarketBarCode2, bill.MarketBarCode1.Substring(0, 4), bill.PayAmount.ToInt32())
+                + bill.PayAmount.ToInt32().ToString().PadLeft(9, '0');
         }
         /// <summary>
-        /// 設置超商檢查碼(待考慮)
+        /// 獲取郵局條碼1
         /// </summary>
         /// <returns></returns>
-        private string GetMarketCompareCode(BillModel bill)
+        private string GetPostBarCode1()
         {
-            return bill.MarketBarCode2;
+            //取郵局通路對應的代收類別代號
+            return DataAccess.CollectionTypeDetail.FirstOrDefault(p => p.Channel.ChannelType == CanalisType.Post)?.CollectionTypeId;
         }
         /// <summary>
-        /// 設置郵局條碼1
-        /// </summary>
-        /// <returns></returns>
-        private string GetPostBarCode1(BillModel bill)
-        {
-            return string.Empty;
-            //return bill.POSTAccount;
-        }
-        /// <summary>
-        /// 設置郵局條碼2
+        /// 獲取郵局條碼2
         /// </summary>
         /// <returns></returns>
         private string GetPostBarCode2(BillModel bill)
@@ -173,20 +182,12 @@ namespace SKGPortalCore.Business.BillData
             return tmpPostBarCode2;
         }
         /// <summary>
-        /// 設置郵局條碼3
+        /// 獲取郵局條碼3
         /// </summary>
         /// <returns></returns>
         private string GetPostBarCode3(BillModel bill)
         {
-            return bill.PayAmount.ToString().PadLeft(8, '0');
-        }
-        /// <summary>
-        /// 設置郵局檢查碼(待考慮)
-        /// </summary>
-        /// <returns></returns>
-        private string GetPostCompareCode(BillModel bill)
-        {
-            return bill.BankBarCode.PadLeft(16, '0');
+            return bill.PayAmount.ToInt32().ToString().PadLeft(8, '0');
         }
         /// <summary>
         /// 檢查銷帳編號是否已存在
@@ -200,21 +201,6 @@ namespace SKGPortalCore.Business.BillData
               && p.BankCode == bill.BankCode
               && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved));
             return null != result;
-        }
-        /// <summary>
-        /// 檢查欄位是否必填(表頭)
-        /// </summary>
-        /// <param name="masterModel">服務申請書主檔</param>
-        private void ConditionRequireFields(BillModel master)
-        {
-
-        }
-        /// <summary>
-        /// 檢查欄位是否必填(表身)
-        /// </summary>
-        /// <param name="masterModel">服務申請書主檔</param>
-        private void ConditionRequireFields(List<BillDetailModel> detail)
-        {
         }
         /// <summary>
         /// 銀行條碼檢碼(無金額檢算)
@@ -391,9 +377,20 @@ namespace SKGPortalCore.Business.BillData
             else
                 return PayStatus.OverPaid;
         }
-        #endregion
-
-        #region DataAccess
+        /// <summary>
+        /// 獲取帳單對應的超商代收類別
+        /// </summary>
+        /// <param name="bill"></param>
+        /// <returns></returns>
+        private string GetCollectionTypeId(BillModel bill)
+        {
+            List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
+            List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();
+            List<string> colTypeIds = DataAccess.CollectionTypeDetail
+                .Where(p => coltypes.Contains(p.CollectionTypeId) && channels.Contains(p.ChannelId) && p.SRange >= bill.PayAmount && p.ERange <= bill.PayAmount)
+                .Select(p => p.CollectionTypeId).ToList();
+            return colTypeIds.Count > 0 ? colTypeIds[0] : string.Empty;
+        }
         #endregion
     }
 }

@@ -333,7 +333,7 @@ namespace SKGPortalCore.Business.Func
             if (data.CTBCFLAG == "1") channels.Add(ChannelValue.CTBC);
             if (data.AGRIFLAG == "1") channels.Add(ChannelValue.Farm);
             channels.Sort();
-            return DataHelper.Merge(",", false, channels.ToArray());
+            return LibData.Merge(",", false, channels.ToArray());
         }
         /// <summary>
         /// 獲取啟用代收類別
@@ -349,7 +349,7 @@ namespace SKGPortalCore.Business.Func
             if (!data.RECVITEM4.IsNullOrEmpty()) collections.Add(data.RECVITEM4);
             if (!data.RECVITEM5.IsNullOrEmpty()) collections.Add(data.RECVITEM5);
             collections.Sort();
-            return DataHelper.Merge(",", false, collections.ToArray());
+            return LibData.Merge(",", false, collections.ToArray());
         }
         /// <summary>
         /// 獲取自組銷帳編號3

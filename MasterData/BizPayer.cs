@@ -17,10 +17,6 @@ namespace SKGPortalCore.Business.MasterData
         {
             CheckPayerNo(set.Payer);
         }
-        public void SetData(PayerSet set)
-        {
-
-        }
         #endregion
 
         #region Private
