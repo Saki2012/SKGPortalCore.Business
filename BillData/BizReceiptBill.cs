@@ -19,7 +19,7 @@ namespace SKGPortalCore.Business.BillData
 
         #region Public
         /// <summary>
-        /// 計算 每筆總手續費之「清算手續費」(內扣)
+        /// 計算 每筆總手續費之「系統商手續費」(內扣)
         /// (每筆總手續費-通路手續費) * (100-分潤%)/100。
         /// </summary>
         /// <param name="totalFee"></param>
@@ -31,7 +31,7 @@ namespace SKGPortalCore.Business.BillData
             return Math.Ceiling((totalFee - channelFee) * ((100m - splitting) / 100m));
         }
         /// <summary>
-        /// 計算 每筆總手續費之「清算手續費」(外加)
+        /// 計算 每筆總手續費之「系統商手續費」(外加)
         /// 每筆總手續費 * (100-分潤%)/100。
         /// </summary>
         /// <param name="totalFee"></param>

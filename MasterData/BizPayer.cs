@@ -27,7 +27,7 @@ namespace SKGPortalCore.Business.MasterData
         private void CheckPayerNo(PayerModel payer)
         {
             if (payer.PayerNo.Length != payer.Customer.PayerNoLen) Message.AddErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(payer.PayerNo), payer.Customer.PayerNoLen);
-            if (ResxManage.IsNumberString(payer.PayerNo)) Message.AddErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(payer.PayerNo));
+            if (payer.PayerNo.IsNumberString()) Message.AddErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(payer.PayerNo));
         }
         #endregion
     }
