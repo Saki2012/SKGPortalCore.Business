@@ -53,7 +53,7 @@ namespace SKGPortalCore.Business.BillData
         public void CheckData(BillSet set)
         {
             if (set.Bill.BizCustomer.VirtualAccountLen != set.Bill.BankBarCode.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
-            if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.BankCode); }
+            if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
         }
         #endregion
 
@@ -64,7 +64,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="bill"></param>
         private void SetBarCode(BillModel bill)
         {
-            bill.BankCode = GetBankCode(bill);
+            bill.CompareCodeForCheck = GetBankCode(bill);
             //銀行：
             bill.BankBarCode = GetBankBarCode(bill);
             //超商：
@@ -122,13 +122,13 @@ namespace SKGPortalCore.Business.BillData
             switch (bill.BizCustomer.VirtualAccount3)
             {
                 case VirtualAccount3.NoverifyCode:
-                    return bill.BankCode;
+                    return bill.CompareCodeForCheck;
                 case VirtualAccount3.Seq:
                 case VirtualAccount3.SeqPayEndDate:
-                    return bill.BankCode + GetBankCheckCodeSeq(bill.BankCode);
+                    return bill.CompareCodeForCheck + GetBankCheckCodeSeq(bill.CompareCodeForCheck);
                 case VirtualAccount3.SeqAmount:
                 case VirtualAccount3.SeqAmountPayEndDate:
-                    return bill.BankCode + GetBankCheckCodeSeqAmount(bill.BankCode, bill.PayAmount > 0 ? bill.PayAmount.ToInt32() : 0);
+                    return bill.CompareCodeForCheck + GetBankCheckCodeSeqAmount(bill.CompareCodeForCheck, bill.PayAmount > 0 ? bill.PayAmount.ToInt32() : 0);
                 default:
                     return string.Empty;
             }
@@ -198,7 +198,7 @@ namespace SKGPortalCore.Business.BillData
         {
             BillModel result = DataAccess.Bill.FirstOrDefault(p =>
               p.BillNo != bill.BillNo
-              && p.BankCode == bill.BankCode
+              && p.CompareCodeForCheck == bill.CompareCodeForCheck
               && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved));
             return null != result;
         }
