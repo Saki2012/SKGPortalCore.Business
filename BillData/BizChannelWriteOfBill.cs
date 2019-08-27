@@ -1,6 +1,7 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
+using System;
 using System.Collections.Generic;
 
 namespace SKGPortalCore.Business.BillData
@@ -10,27 +11,62 @@ namespace SKGPortalCore.Business.BillData
     /// </summary>
     public class BizChannelWriteOfBill : BizBase
     {
-        #region Public
+        #region Construct
         public BizChannelWriteOfBill(MessageLog message) : base(message) { }
         #endregion
 
-        #region Private
-        private void CompareData(List<ChannelWriteOfDetailModel> channelWriteOfDetail, List<CashFlowWriteOfDetailModel> cashFlowWriteOfDetail)
+        #region Public
+        public void CheckData(ChannelWriteOfBillSet set)
         {
-            RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel> rc = new RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel>(channelWriteOfDetail, cashFlowWriteOfDetail, "BillNo,RowId", "BillNo,RowId");
+            if (CompareData(set.ChannelWriteOfDetail, set.CashFlowWriteOfDetail) != 0m) {/*核銷金額不一致，請確認！*/ }
+        }
+        #endregion
+
+        #region Private
+        private decimal CompareData(List<ChannelWriteOfDetailModel> channelWriteOfDetail, List<CashFlowWriteOfDetailModel> cashFlowWriteOfDetail)
+        {
+            decimal val = 0m;
+            RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel> rc = new RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel>(channelWriteOfDetail, cashFlowWriteOfDetail);
+            rc.Master.Sort(new Comparison<ChannelWriteOfDetailModel>((x, y) =>
+          {
+              int result = x.ChannelEAccountBill.ChannelId.CompareTo(y.ChannelEAccountBill.ChannelId);
+              if (result == 0) result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.ChannelEAccountBill.CollectionTypeId);
+              else return result;
+              return result;
+          }));
+            rc.Detail.Sort(new Comparison<CashFlowWriteOfDetailModel>((x, y) =>
+           {
+               int result = x.CashFlowBill.ChannelId.CompareTo(y.CashFlowBill.ChannelId);
+               if (result == 0) result = x.CashFlowBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
+               else return result;
+               return result;
+           }));
+            rc.CompareFunc = new Func<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel, int>((x, y) =>
+             {
+                 int result = x.ChannelEAccountBill.ChannelId.CompareTo(y.CashFlowBill.ChannelId);
+                 if (result == 0) result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
+                 else return result;
+                 return result;
+             });
+
             if (rc.Enable)
                 while (!rc.IsEof)
                 {
                     rc.BackToBookMark();
+                    val += rc.CurrentRow.ChannelEAccountBill.ExpectRemitAmount;
                     while (rc.Compare())
                     {
                         rc.SetBookMark();
-                        rc.CurrentRow.Value += rc.DetailRow.Value;
+                        val -= rc.DetailRow.CashFlowBill.BillNo.ToDecimal();
                         rc.DetailMoveNext();
                     }
                     rc.MoveNext();
                 }
+            return val;
         }
+
+
+
         #endregion
     }
 }

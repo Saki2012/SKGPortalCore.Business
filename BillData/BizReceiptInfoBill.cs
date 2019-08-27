@@ -31,6 +31,7 @@ namespace SKGPortalCore.Business.BillData
         private protected void GetBizCustFee(List<BizCustFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
+            if (!LibData.HasData(detail)) return;
             BizCustFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             hiTrustFee = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee).Fee;
             if (null != model)
@@ -96,7 +97,7 @@ namespace SKGPortalCore.Business.BillData
                     BillNo = "",
                     CustomerCode = bizCust.BizCustomer.CustomerCode,
                     CollectionTypeId = "Bank999",
-                    ChannelId=model.Channel,
+                    ChannelId = model.Channel,
                     TransDate = tradeDate,
                     TradeDate = tradeDate,
                     RemitDate = tradeDate,

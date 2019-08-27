@@ -11,25 +11,28 @@ namespace SKGPortalCore.Business.BillData
 
         #region Public
         /// <summary>
-        /// 保存前時機
+        /// 設置欄位
         /// </summary>
         /// <param name="set"></param>
-        public void BeforeUpdate(ChannelEAccountBillSet set)
+        /// <param name="action"></param>
+        public void SetData(ChannelEAccountBillSet set)
         {
-            set.ChannelEAccountBill.ExpectRemitAmount = 0m;
-            foreach (var detail in set.ChannelEAccountBillDetail)
+            int count = 0;
+            decimal payAmount = 0, fee = 0;
+            foreach (var s in set.ChannelEAccountBillDetail)
             {
-                set.ChannelEAccountBill.ExpectRemitAmount += detail.ReceiptBill.PayAmount;
+                payAmount += s.ReceiptBill.PayAmount;
+                fee += s.ReceiptBill.ChannelFee;
+                count++;
             }
+            set.ChannelEAccountBill.Amount = payAmount;
+            set.ChannelEAccountBill.ExpectRemitAmount = payAmount - fee;
+            set.ChannelEAccountBill.PayCount = count;
         }
-        /// <summary>
-        /// 保存後時機
-        /// </summary>
-        /// <param name="set"></param>
-        public void AfterUpdate(ChannelEAccountBillSet set) { }
         #endregion
 
         #region Private
+        
         #endregion
     }
 }
