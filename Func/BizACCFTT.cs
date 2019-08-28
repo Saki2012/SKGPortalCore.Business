@@ -14,70 +14,7 @@ namespace SKGPortalCore.Business.Func
     {
         public BizACCFTT(MessageLog message, ApplicationDbContext db) : base(message, db) { }
 
-        #region Public
-        public void SyncACCFTT()
-        {
-            string[] content = GetFileData();
-            if (content == null || content.Length == 0) return;
-            List<ACCFTT> datas = AnalysisACCFTT(content);
-            List<BizCustomerSet> bizCustomerSets = new List<BizCustomerSet>();//datas customerid in
-            List<CustomerSet> customerSets = new List<CustomerSet>();//datas customerCode in
-            SyncData(bizCustomerSets, customerSets, datas);
-            SyncPasuwado();
-        }
-        public void SendEmail()
-        {
-
-
-        }
-        #endregion
-
         #region Private
-        /// <summary>
-        /// 獲取ACCFTT檔案內容
-        /// </summary>
-        /// <returns></returns>
-        private string[] GetFileData()
-        {
-            string filePath = @"D:\Proj\SKGPortalCore\SKGPortalCore\FileDir\ACCFTT.txt";
-            if (!File.Exists(filePath))
-            {
-                //Code1004
-                return null;
-            }
-            return File.ReadAllLines(filePath);
-            //return File.ReadAllLines(filePath, Encoding.GetEncoding(950));
-        }
-        /// <summary>
-        /// 解析ACCFTT內容
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        private List<ACCFTT> AnalysisACCFTT(string[] content)
-        {
-            List<ACCFTT> result = new List<ACCFTT>();
-            byte[] filesLen = new byte[] {6,13,40,4,4,11,8,8,1,1,1,1,
-                                          1,3,1,1,1,1,3,3,3,3,3,2,2,
-                                          2,2,1,2,2,1,3,8,1,1,8,1,3,1,1,7,1,3,3,1,
-                                          1,2,2,2,1,2,2,2,2,2,2,1,2,1,2,1,2,50};
-            int totalLen = 0, contentLen = content.Length, lens = filesLen.Length;
-            foreach (byte len in filesLen) totalLen += len;
-            int rowNo;
-            for (int i = 0; i < contentLen; i++)
-            {
-                rowNo = i + 1;
-                if (totalLen != content[i].ByteLen()) {/*throw "第{0}行、長度不符",rowNo,totalLen*/}
-                int p = 0;
-                ACCFTT a = new ACCFTT();
-                for (int j = 0; j < lens; j++)
-                {
-                    a.SetValue(j, content[i].ByteSubString(p, filesLen[j]).Trim());
-                    p += filesLen[j];
-                }
-                result.Add(a);
-            }
-            return result;
-        }
         /// <summary>
         /// 
         /// </summary>
@@ -158,10 +95,10 @@ namespace SKGPortalCore.Business.Func
             bizCust.EntrustCustId = data.CUSTID;
 
 
-            List<BizCustFeeDetailModel> bizCustDetail = bizCustomerSet.BizCustFeeDetail;
+            List<BizCustomerFeeDetailModel > bizCustDetail = bizCustomerSet.BizCustomerFeeDetail;
 
             if (!data.ACTFEE.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Market,
@@ -170,7 +107,7 @@ namespace SKGPortalCore.Business.Func
                     Percent = 0m
                 });
             if (!data.ACTFEEPT.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Post,
@@ -181,7 +118,7 @@ namespace SKGPortalCore.Business.Func
             if (!data.HIFLAG.IsNullOrEmpty())
                 bizCust.HiTrustFlag = (HiTrustFlag)data.HIFLAG.ToByte();
             if (!data.HIFARE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.HiTrust,
@@ -191,7 +128,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //銀行-每筆總手續費
             if (!data.ACTFEEBEFT.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Bank,
@@ -201,7 +138,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //超商-每筆總手續費
             if (!data.ACTFEEMART.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Market,
@@ -211,7 +148,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //郵局-每筆總手續費
             if (!data.ACTFEEPOST.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Post,
@@ -221,7 +158,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //農金-清算手續費
             if (!data.AGRIFEE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustFeeDetailModel()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Farm,

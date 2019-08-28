@@ -1,12 +1,11 @@
-﻿using GraphQL.Types;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using GraphQL.Types;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData.OperateSystem;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 
 namespace SKGPortalCore.Business.Func
 {

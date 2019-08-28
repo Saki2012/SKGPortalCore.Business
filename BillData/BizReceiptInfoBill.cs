@@ -29,11 +29,11 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="bankFee"></param>
         /// <param name="thirdFee"></param>
         /// <param name="hiTrustFee"></param>
-        private protected void GetBizCustFee(List<BizCustFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
+        private protected void GetBizCustFee(List<BizCustomerFeeDetailModel > detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
             if (!LibData.HasData(detail)) return;
-            BizCustFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
+            BizCustomerFeeDetailModel  model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             hiTrustFee = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee).Fee;
             if (null != model)
             {
@@ -90,7 +90,7 @@ namespace SKGPortalCore.Business.BillData
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillBankModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
             DateTime.TryParse($"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}", out DateTime tradeDate);
-            GetBizCustFee(bizCust.BizCustFeeDetail, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -127,7 +127,7 @@ namespace SKGPortalCore.Business.BillData
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
-            GetBizCustFee(bizCust.BizCustFeeDetail, channelFee, chargePayType, CanalisType.Post, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Post, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -164,7 +164,7 @@ namespace SKGPortalCore.Business.BillData
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
-            GetBizCustFee(bizCust.BizCustFeeDetail, channelFee, chargePayType, CanalisType.Market, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Market, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -200,7 +200,7 @@ namespace SKGPortalCore.Business.BillData
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketSPIModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
-            GetBizCustFee(bizCust.BizCustFeeDetail, channelFee, chargePayType, CanalisType.Market, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Market, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -238,7 +238,7 @@ namespace SKGPortalCore.Business.BillData
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillFarmModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
-            GetBizCustFee(bizCust.BizCustFeeDetail, channelFee, chargePayType, CanalisType.Farm, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Farm, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()

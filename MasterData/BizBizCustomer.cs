@@ -9,7 +9,7 @@ namespace SKGPortalCore.Business.MasterData
         public void LoopAction(BizCustomerSet set)
         {
 
-            foreach (BizCustFeeDetailModel bizCustFeeDetail in set.BizCustFeeDetail)
+            foreach (BizCustomerFeeDetailModel  bizCustFeeDetail in set.BizCustomerFeeDetail)
             {
 
             }

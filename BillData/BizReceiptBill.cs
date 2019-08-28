@@ -4,6 +4,7 @@ using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace SKGPortalCore.Business.BillData
@@ -14,18 +15,29 @@ namespace SKGPortalCore.Business.BillData
     public class BizReceiptBill : BizBase
     {
         #region Construct
-        public BizReceiptBill(MessageLog message) : base(message) { }
+        public BizReceiptBill(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         #endregion
 
         #region Public
+
+        public void SetData(ReceiptBillSet set, FuncAction action)
+        {
+            set.ReceiptBill.ToBillNo = GetBillNo(set.ReceiptBill.CompareCodeForCheck);
+            if (action == FuncAction.Create)//未來若有修改RemitDate的情況，需進行差異調整
+                set.ReceiptBill.RemitDate = GetRemitDate(set.ReceiptBill);
+        }
+
+
+
         /// <summary>
         /// 獲取預計匯款日
         /// </summary>
         /// <param name="model"></param>
         /// <param name="periodModel"></param>
         /// <returns></returns>
-        public DateTime GetRemitDate(ReceiptBillModel model, ChannelVerifyPeriodModel periodModel)
+        public DateTime GetRemitDate(ReceiptBillModel model)
         {
+            ChannelVerifyPeriodModel periodModel = DataAccess.Set<ChannelVerifyPeriodModel>().Find(new object[] { model.ChannelId, model.CollectionTypeId });
             switch (periodModel.PayPeriodType)
             {
                 case PayPeriodType.NDay:
@@ -68,6 +80,17 @@ namespace SKGPortalCore.Business.BillData
             };
         }
 
+        /// <summary>
+        /// 獲取對應的帳單編號
+        /// </summary>
+        /// <param name="set"></param>
+        /// <returns></returns>
+        public string GetBillNo(string compareCodeForCheck)
+        {
+            List<string> bills = DataAccess.Set<BillModel>().Where(p => p.CompareCodeForCheck == compareCodeForCheck &&
+             (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).ToList();
+            return bills.HasData() ? bills[0] : string.Empty;
+        }
 
 
         /// <summary>
@@ -144,7 +167,7 @@ namespace SKGPortalCore.Business.BillData
         /// <returns></returns>
         private DateTime GetWeekTime(DateTime transDate)
         {
-            if(transDate.DayOfWeek!= DayOfWeek.Sunday)
+            if (transDate.DayOfWeek != DayOfWeek.Sunday)
             {
 
             }
