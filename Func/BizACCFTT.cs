@@ -1,12 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.Func
 {

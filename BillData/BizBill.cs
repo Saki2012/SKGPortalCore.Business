@@ -2,9 +2,9 @@
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
+using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
-using SKGPortalCore.Models.BillData;
 using System.Collections.Generic;
 using System.Linq;
 namespace SKGPortalCore.Business.BillData
@@ -35,14 +35,20 @@ namespace SKGPortalCore.Business.BillData
                 SetBarCode(set.Bill);
 
             set.Bill.PayAmount = 0m;
-            foreach (var detail in set.BillDetail)
+            if (null != set.BillDetail)
             {
-                set.Bill.PayAmount += detail.PayAmount;
+                foreach (var detail in set.BillDetail)
+                {
+                    set.Bill.PayAmount += detail.PayAmount;
+                }
             }
             set.Bill.HasPayAmount = 0m;
-            foreach (var detail in set.BillReceiptDetail)
+            if (null != set.BillReceiptDetail)
             {
-                set.Bill.HasPayAmount += detail.ReceiptBill.PayAmount;
+                foreach (var detail in set.BillReceiptDetail)
+                {
+                    set.Bill.HasPayAmount += detail.ReceiptBill.PayAmount;
+                }
             }
             set.Bill.PayStatus = GetPayStatus(set.Bill.PayAmount, set.Bill.HasPayAmount);
         }
@@ -169,7 +175,7 @@ namespace SKGPortalCore.Business.BillData
         private string GetPostBarCode1()
         {
             //取郵局通路對應的代收類別代號
-            return DataAccess.CollectionTypeDetail.FirstOrDefault(p => p.Channel.ChannelType == CanalisType.Post)?.CollectionTypeId;
+            return DataAccess.Set<CollectionTypeDetailModel>().FirstOrDefault(p => p.Channel.ChannelType == CanalisType.Post)?.CollectionTypeId;
         }
         /// <summary>
         /// 獲取郵局條碼2
@@ -196,10 +202,10 @@ namespace SKGPortalCore.Business.BillData
         /// <returns></returns>
         private bool CheckBankCodeExist(BillModel bill)
         {
-            BillModel result = DataAccess.Bill.FirstOrDefault(p =>
-              p.BillNo != bill.BillNo
-              && p.CompareCodeForCheck == bill.CompareCodeForCheck
-              && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved));
+            BillModel result = DataAccess.Set<BillModel>().FirstOrDefault(p =>
+             p.BillNo != bill.BillNo
+             && p.CompareCodeForCheck == bill.CompareCodeForCheck
+             && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved));
             return null != result;
         }
         /// <summary>
@@ -386,7 +392,7 @@ namespace SKGPortalCore.Business.BillData
         {
             List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
             List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();
-            List<string> colTypeIds = DataAccess.CollectionTypeDetail
+            List<string> colTypeIds = DataAccess.Set<CollectionTypeDetailModel>()
                 .Where(p => coltypes.Contains(p.CollectionTypeId) && channels.Contains(p.ChannelId) && p.SRange >= bill.PayAmount && p.ERange <= bill.PayAmount)
                 .Select(p => p.CollectionTypeId).ToList();
             return colTypeIds.Count > 0 ? colTypeIds[0] : string.Empty;

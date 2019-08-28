@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
+using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.BillData
 {
