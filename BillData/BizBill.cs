@@ -31,6 +31,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="action"></param>
         public void SetData(BillSet set, FuncAction action)
         {
+            Message.AddErrorMessage(MessageCode.Code0001, "測試欄位");
             if (action == FuncAction.Create)
                 SetBarCode(set.Bill);
 
@@ -276,15 +277,12 @@ namespace SKGPortalCore.Business.BillData
             }
 
             tv = 11 - tv % 11;
-            switch (tv)
+            return tv switch
             {
-                case 10:
-                    return "0";
-                case 11:
-                    return "1";
-                default:
-                    return tv.ToString()[0].ToString();
-            }
+                10 => "0",
+                11 => "1",
+                _ => tv.ToString()[0].ToString(),
+            };
         }
         /// <summary>
         /// 超商檢碼
