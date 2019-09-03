@@ -19,7 +19,7 @@ namespace SKGPortalCore.Business
         {
             Message = message;
             DataAccess = dataAccess;
-            User = user ?? new SystemOperator().SysOperator;
+            User = user ?? SystemOperator.SysOperator;
         }
         #endregion
 
