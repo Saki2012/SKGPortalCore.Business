@@ -72,7 +72,8 @@ namespace SKGPortalCore.Business.Func
             var session = (ISessionWapper)context.UserContext;
             if (!CheckAuthenticate(session.SessionId, context.GetArgument<string>("jWT"), claimType, claimValue))
             {
-                MessageLog log = new MessageLog(context.Errors);
+                //context.Errors 待確認
+                MessageLog log = new MessageLog(SystemOperator.SysOperator);
                 log.AddErrorMessage(MessageCode.Code0002, ResxManage.GetDescription(FuncAction.Query));
                 return false;
             }

@@ -32,11 +32,11 @@ namespace SKGPortalCore.Business.BillData
         public void SetData(BillSet set, FuncAction action)
         {
             Message.AddErrorMessage(MessageCode.Code0001, "測試欄位");
-            if (action == FuncAction.Create)
-                SetBarCode(set.Bill);
+            //if (action == FuncAction.Create)
+            SetBarCode(set.Bill);
 
             set.Bill.PayAmount = 0m;
-            if (null != set.BillDetail)
+            if (set.BillDetail.HasData())
             {
                 foreach (var detail in set.BillDetail)
                 {
@@ -44,7 +44,7 @@ namespace SKGPortalCore.Business.BillData
                 }
             }
             set.Bill.HasPayAmount = 0m;
-            if (null != set.BillReceiptDetail)
+            if (set.BillReceiptDetail.HasData())
             {
                 foreach (var detail in set.BillReceiptDetail)
                 {
@@ -59,7 +59,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="set"></param>
         public void CheckData(BillSet set)
         {
-            if (set.Bill.BizCustomer.VirtualAccountLen != set.Bill.BankBarCode.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
+            if (set.Bill.BizCustomer?.VirtualAccountLen != set.Bill.BankBarCode?.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
             if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
         }
         #endregion
