@@ -29,9 +29,9 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public void SetData(BillSet set, FuncAction action)
+        public void SetData(BillSet set/*, FuncAction action*/)
         {
-            Message.AddErrorMessage(MessageCode.Code0001, "測試欄位");
+            //Message.AddErrorMessage(MessageCode.Code0001, "測試欄位");
             //if (action == FuncAction.Create)
             SetBarCode(set.Bill);
 
