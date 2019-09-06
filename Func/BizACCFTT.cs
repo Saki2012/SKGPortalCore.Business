@@ -23,32 +23,22 @@ namespace SKGPortalCore.Business.Func
         {
             foreach (ACCFTT data in datas)
             {
-                using var transaction = DataAccess.Database.BeginTransaction();
-                try
+                switch (data.APPLYSTAT.ToInt32())
                 {
-                    switch (data.APPLYSTAT.ToInt32())
-                    {
-                        case 0:
-                            {
-                                SetCustomer(data, new CustomerSet());
-                                SetBizCustomer(data, new BizCustomerSet());
-                                //throw new Exception();
-                            }
-                            break;
-                        case 1:
-                        case 9:
-                            {
-                                BizCustomerSet set = bizCustomerSets.Where(p => p.BizCustomer.CustomerId == data.IDCODE && p.BizCustomer.CustomerCode == data.KEYNO).FirstOrDefault();
-                                if (null != set) set.BizCustomer.AccountStatus = AccountStatus.Unable;
-                            }
-                            break;
-                    }
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    throw ex;
+                    case 0:
+                        {
+                            SetCustomer(data, new CustomerSet());
+                            SetBizCustomer(data, new BizCustomerSet());
+                            //throw new Exception();
+                        }
+                        break;
+                    case 1:
+                    case 9:
+                        {
+                            BizCustomerSet set = bizCustomerSets.Where(p => p.BizCustomer.CustomerId == data.IDCODE && p.BizCustomer.CustomerCode == data.KEYNO).FirstOrDefault();
+                            if (null != set) set.BizCustomer.AccountStatus = AccountStatus.Unable;
+                        }
+                        break;
                 }
             }
             //BizCustomerRepository bizCustomerRepository = new BizCustomerRepository();
@@ -95,10 +85,10 @@ namespace SKGPortalCore.Business.Func
             bizCust.EntrustCustId = data.CUSTID;
 
 
-            List<BizCustomerFeeDetailModel > bizCustDetail = bizCustomerSet.BizCustomerFeeDetail;
+            List<BizCustomerFeeDetailModel> bizCustDetail = bizCustomerSet.BizCustomerFeeDetail;
 
             if (!data.ACTFEE.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Market,
@@ -107,7 +97,7 @@ namespace SKGPortalCore.Business.Func
                     Percent = 0m
                 });
             if (!data.ACTFEEPT.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Post,
@@ -118,7 +108,7 @@ namespace SKGPortalCore.Business.Func
             if (!data.HIFLAG.IsNullOrEmpty())
                 bizCust.HiTrustFlag = (HiTrustFlag)data.HIFLAG.ToByte();
             if (!data.HIFARE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.HiTrust,
@@ -128,7 +118,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //銀行-每筆總手續費
             if (!data.ACTFEEBEFT.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Bank,
@@ -138,7 +128,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //超商-每筆總手續費
             if (!data.ACTFEEMART.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Market,
@@ -148,7 +138,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //郵局-每筆總手續費
             if (!data.ACTFEEPOST.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Post,
@@ -158,7 +148,7 @@ namespace SKGPortalCore.Business.Func
                 });
             //農金-清算手續費
             if (!data.AGRIFEE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel ()
+                bizCustDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = bizCust.CustomerCode,
                     ChannelType = CanalisType.Farm,

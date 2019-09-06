@@ -12,7 +12,7 @@ using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.BillData
 {
-    public interface IBizReceiptInfoBill<T> where T : IReceiptInfoBill
+    public interface IBizReceiptInfoBill<T> where T : IImportSource
     {
         public void CheckData(T model);
         public ReceiptBillSet GetReceiptBillSet(T model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck);
