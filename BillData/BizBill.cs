@@ -25,7 +25,7 @@ namespace SKGPortalCore.Business.BillData
 
         #region Public
         /// <summary>
-        /// 設置欄位
+        /// 設置資料
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
@@ -54,7 +54,7 @@ namespace SKGPortalCore.Business.BillData
             set.Bill.PayStatus = GetPayStatus(set.Bill.PayAmount, set.Bill.HasPayAmount);
         }
         /// <summary>
-        /// 檢查欄位
+        /// 檢查資料
         /// </summary>
         /// <param name="set"></param>
         public void CheckData(BillSet set)

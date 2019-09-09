@@ -6,187 +6,180 @@ using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
+using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.Func
 {
     public class BizACCFTT : BizBase
     {
-        public BizACCFTT(MessageLog message, ApplicationDbContext db) : base(message, db) { }
+        #region Construct
+        public BizACCFTT(MessageLog message) : base(message) { }
+        #endregion
 
-        #region Private
+        #region Public
         /// <summary>
-        /// 
+        /// 服務申請書對應客戶資料
         /// </summary>
-        /// <param name="data"></param>
-        private void SyncData(List<BizCustomerSet> bizCustomerSets, List<CustomerSet> customerSets, List<ACCFTT> datas)
+        /// <param name="accftt"></param>
+        public CustomerSet SetCustomer(ACCFTT accftt, CustomerSet customerSet)
         {
-            foreach (ACCFTT data in datas)
-            {
-                switch (data.APPLYSTAT.ToInt32())
-                {
-                    case 0:
-                        {
-                            SetCustomer(data, new CustomerSet());
-                            SetBizCustomer(data, new BizCustomerSet());
-                            //throw new Exception();
-                        }
-                        break;
-                    case 1:
-                    case 9:
-                        {
-                            BizCustomerSet set = bizCustomerSets.Where(p => p.BizCustomer.CustomerId == data.IDCODE && p.BizCustomer.CustomerCode == data.KEYNO).FirstOrDefault();
-                            if (null != set) set.BizCustomer.AccountStatus = AccountStatus.Unable;
-                        }
-                        break;
-                }
-            }
-            //BizCustomerRepository bizCustomerRepository = new BizCustomerRepository();
-            //bizCustomerRepository.Create(bizCustomerSets[0]);
-            //CustomerRepository customerRepository = new CustomerRepository();
-            //customerRepository.Create(customerSets[0]);
+            if (null == customerSet) customerSet = new CustomerSet();
+            if (null == customerSet.Customer) customerSet.Customer = new CustomerModel();
+            string custId = accftt.IDCODE.TrimStart('0');
+            customerSet.Customer.CustomerId = custId;
+            customerSet.Customer.CustomerName = accftt.CUSTNAME;
+            customerSet.Customer.DeptId = accftt.APPBECODE;
+            customerSet.Customer.BillTermLen = 3;
+            customerSet.Customer.PayerNoLen = 6;
+            customerSet.Customer.IsSysCust = false;
+            return customerSet;
         }
         /// <summary>
-        /// 
+        /// 服務申請書對應商戶資料
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="customerSet"></param>
-        private void SetCustomer(ACCFTT data, CustomerSet customerSet)
+        /// <param name="accftt"></param>
+        public BizCustomerSet SetBizCustomer(ACCFTT accftt, BizCustomerSet bizCustomerSet)
         {
-            CustomerModel cust = customerSet.Customer;
-            cust.CustomerId = data.IDCODE;
-            cust.CustomerName = data.CUSTNAME;
-            cust.DeptId = data.APPBECODE;
-            cust.BillTermLen = 3;
-            cust.PayerNoLen = 6;
-            cust.IsSysCust = false;
+            if (null == bizCustomerSet) bizCustomerSet = new BizCustomerSet();
+            if (null == bizCustomerSet.BizCustomer) bizCustomerSet.BizCustomer = new BizCustomerModel();
+            if (null == bizCustomerSet.BizCustomerFeeDetail) bizCustomerSet.BizCustomerFeeDetail = new List<BizCustomerFeeDetailModel>();
+            string custId = accftt.IDCODE.TrimStart('0'); string custCode = accftt.KEYNO.Trim();
+            bizCustomerSet.BizCustomer.CustomerId = custId;
+            bizCustomerSet.BizCustomer.CustomerCode = custCode;
+            bizCustomerSet.BizCustomer.AccountDeptId = accftt.BRCODE;
+            bizCustomerSet.BizCustomer.RealAccount = accftt.ACCIDNO;
+            bizCustomerSet.BizCustomer.VirtualAccountLen = (10 + custCode.Length).ToByte();
+            bizCustomerSet.BizCustomer.ChannelIds = GetChannel(accftt);
+            bizCustomerSet.BizCustomer.CollectionTypeIds = GetCollectionType(accftt);
+            bizCustomerSet.BizCustomer.VirtualAccount3 = GetVirtualAccount3(accftt);
+            bizCustomerSet.BizCustomer.AccountStatus = AccountStatus.Unable;
+            bizCustomerSet.BizCustomer.EntrustCustId = accftt.CUSTID;
+            bizCustomerSet.BizCustomer.ImportBatchNo = accftt.ImportBatchNo;
+            bizCustomerSet.BizCustomer.Source = accftt.Src;
 
-            //CustomerRepository rep = new CustomerRepository(DataAccess);
-            //rep.Create(customerSet);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="bizCustomerSet"></param>
-        private void SetBizCustomer(ACCFTT data, BizCustomerSet bizCustomerSet)
-        {
-            BizCustomerModel bizCust = bizCustomerSet.BizCustomer;
-
-            bizCust.CustomerId = data.IDCODE;
-            bizCust.CustomerCode = data.KEYNO;
-            bizCust.AccountDeptId = data.BRCODE;
-            bizCust.RealAccount = data.ACCIDNO;
-            bizCust.VirtualAccountLen = (10 + data.KEYNO.Length).ToByte();
-            bizCust.ChannelIds = GetChannel(data);
-            bizCust.CollectionTypeIds = GetCollectionType(data);
-            bizCust.AccountStatus = AccountStatus.Unable;
-            bizCust.VirtualAccount3 = GetVirtualAccount3(data);
-            bizCust.EntrustCustId = data.CUSTID;
-
-
-            List<BizCustomerFeeDetailModel> bizCustDetail = bizCustomerSet.BizCustomerFeeDetail;
-
-            if (!data.ACTFEE.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            int rowId = bizCustomerSet.BizCustomerFeeDetail.OrderBy(p => -p.RowId).Select(p => p.RowId).FirstOrDefault();
+            bizCustomerSet.BizCustomerFeeDetail.ForEach(p => p.RowState = RowState.Delete);
+            if (!accftt.ACTFEE.ToInt32().IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Market,
                     FeeType = FeeType.ClearFee,
-                    Fee = data.ACTFEE.ToDecimal(),
+                    Fee = accftt.ACTFEE.ToDecimal(),
                     Percent = 0m
                 });
-            if (!data.ACTFEEPT.ToInt32().IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.ACTFEEPT.ToInt32().IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Post,
                     FeeType = FeeType.ClearFee,
-                    Fee = data.ACTFEEPT.ToDecimal(),
+                    Fee = accftt.ACTFEEPT.ToDecimal(),
                     Percent = 0m,
                 });
-            if (!data.HIFLAG.IsNullOrEmpty())
-                bizCust.HiTrustFlag = (HiTrustFlag)data.HIFLAG.ToByte();
-            if (!data.HIFARE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.HIFLAG.IsNullOrEmpty())
+                bizCustomerSet.BizCustomer.HiTrustFlag = (HiTrustFlag)accftt.HIFLAG.ToByte();
+            if (!accftt.HIFARE.IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.HiTrust,
                     FeeType = FeeType.HitrustFee,
-                    Fee = data.HIFARE.ToDecimal(),
+                    Fee = accftt.HIFARE.ToDecimal(),
                     Percent = 0m,
                 });
             //銀行-每筆總手續費
-            if (!data.ACTFEEBEFT.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.ACTFEEBEFT.IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Bank,
                     FeeType = FeeType.TotalFee,
-                    Fee = data.ACTFEEBEFT.ToDecimal(),
-                    Percent = data.SHAREBEFTPERCENT.ToDecimal(),
+                    Fee = accftt.ACTFEEBEFT.ToDecimal(),
+                    Percent = accftt.SHAREBEFTPERCENT.ToDecimal(),
                 });
             //超商-每筆總手續費
-            if (!data.ACTFEEMART.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.ACTFEEMART.IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Market,
                     FeeType = FeeType.TotalFee,
-                    Fee = data.ACTFEEMART.ToDecimal(),
-                    Percent = data.ACTPERCENT.ToDecimal(),
+                    Fee = accftt.ACTFEEMART.ToDecimal(),
+                    Percent = accftt.ACTPERCENT.ToDecimal(),
                 });
             //郵局-每筆總手續費
-            if (!data.ACTFEEPOST.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.ACTFEEPOST.IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Post,
                     FeeType = FeeType.TotalFee,
-                    Fee = data.ACTFEEPOST.ToDecimal(),
-                    Percent = data.POSTPERCENT.ToDecimal(),
+                    Fee = accftt.ACTFEEPOST.ToDecimal(),
+                    Percent = accftt.POSTPERCENT.ToDecimal(),
                 });
             //農金-清算手續費
-            if (!data.AGRIFEE.IsNullOrEmpty())
-                bizCustDetail.Add(new BizCustomerFeeDetailModel()
+            if (!accftt.AGRIFEE.IsNullOrEmpty())
+                bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
-                    CustomerCode = bizCust.CustomerCode,
+                    CustomerCode = custCode,
+                    RowId = ++rowId,
+                    RowState = RowState.Insert,
                     ChannelType = CanalisType.Farm,
                     FeeType = FeeType.ClearFee,
-                    Fee = data.AGRIFEE.ToDecimal(),
+                    Fee = accftt.AGRIFEE.ToDecimal(),
                     Percent = 0,
                 });
-
-            //BizCustomerRepository rep = new BizCustomerRepository(DataAccess);
-            //rep.Create(bizCustomerSet);
+            return bizCustomerSet;
         }
         /// <summary>
-        /// 同步客戶Admin密碼
+        /// 新增登入帳戶
         /// </summary>
-        private void SyncPasuwado()
+        /// <param name="accftt"></param>
+        /// <returns></returns>
+        public CustUserSet AddAdminAccount(ACCFTT accftt)
         {
-            List<string> customerids = new List<string>();
-            /*
-            --Update
-            Select * From Customer A
-            Inner Join CustomerAdminPaswado B On A.CustomerId=B.CustomerId
-            Inner Join CustUserModel C On A.CustomerId=C.CustomerId And C.UserId='Admin'
-            --Insert
-            Select * From Customer A
-            --Inner Join CustomerAdminPaswado B On A.CustomerId=B.CustomerId
-            Left Join CustUserModel C On A.CustomerId=C.CustomerId And C.UserId='Admin'
-            Where C.KeyId Is Null
-             */
+            return new CustUserSet()
+            {
+                User = new CustUserModel()
+                {
+                    KeyId = $"{accftt.IDCODE.TrimStart('0')},admin",
+                    CustomerId = accftt.IDCODE.TrimStart('0'),
+                    UserId = "admin",
+                    UserName = "管理員",
+                    AccountStatus = AccountStatus.Unable,
+                },
+                UserRoles = new List<CustUserRoleModel>()
+                {
+                    new CustUserRoleModel() { KeyId = $"{accftt.IDCODE.TrimStart('0')},admin", RoleId = "admin" }
+                }
+            };
         }
+        #endregion
+
+        #region Private
         /// <summary>
         /// 獲取啟用通路
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="accftt"></param>
         /// <returns></returns>
-        private string GetChannel(ACCFTT data)
+        private string GetChannel(ACCFTT accftt)
         {
             List<string> channels = new List<string>();
-            switch (data.CHANNEL)
+            switch (accftt.CHANNEL)
             {
                 case "9":
                     {
@@ -196,11 +189,11 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (data.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (data.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (data.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (data.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (data.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
+                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
+                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
+                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
+                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
                     }
                     break;
                 case "0":
@@ -210,11 +203,11 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (data.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (data.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (data.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (data.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (data.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
+                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
+                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
+                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
+                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
                     }
                     break;
                 case "1":
@@ -224,20 +217,20 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (data.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (data.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (data.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (data.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (data.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
+                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
+                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
+                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
+                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
                     }
                     break;
                 case "2":
                     {
                         channels.Add(ChannelValue.Cash);
-                        if (data.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (data.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (data.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (data.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
+                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
+                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
+                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
                     }
                     break;
                 case "3":
@@ -247,58 +240,58 @@ namespace SKGPortalCore.Business.Func
                     break;
                 case "4":
                     {
-                        if (data.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (data.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (data.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (data.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (data.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
+                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
+                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
+                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
+                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
                     }
                     break;
             }
-            if (data.AUTOFLAG == "1") channels.Add(ChannelValue.Deduct_Server); channels.Add(ChannelValue.Deduct_Client);
-            if (data.EBFLAG == "1") channels.Add(ChannelValue.EB);
-            if (data.CTBCFLAG == "1") channels.Add(ChannelValue.CTBC);
-            if (data.AGRIFLAG == "1") channels.Add(ChannelValue.Farm);
+            if (accftt.AUTOFLAG == "1") channels.Add(ChannelValue.Deduct_Server); channels.Add(ChannelValue.Deduct_Client);
+            if (accftt.EBFLAG == "1") channels.Add(ChannelValue.EB);
+            if (accftt.CTBCFLAG == "1") channels.Add(ChannelValue.CTBC);
+            if (accftt.AGRIFLAG == "1") channels.Add(ChannelValue.Farm);
             channels.Sort();
             return LibData.Merge(",", false, channels.ToArray());
         }
         /// <summary>
         /// 獲取啟用代收類別
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="accftt"></param>
         /// <returns></returns>
-        private string GetCollectionType(ACCFTT data)
+        private string GetCollectionType(ACCFTT accftt)
         {
             List<string> collections = new List<string>();
-            if (!data.RECVITEM1.IsNullOrEmpty()) collections.Add(data.RECVITEM1);
-            if (!data.RECVITEM2.IsNullOrEmpty()) collections.Add(data.RECVITEM2);
-            if (!data.RECVITEM3.IsNullOrEmpty()) collections.Add(data.RECVITEM3);
-            if (!data.RECVITEM4.IsNullOrEmpty()) collections.Add(data.RECVITEM4);
-            if (!data.RECVITEM5.IsNullOrEmpty()) collections.Add(data.RECVITEM5);
+            if (!accftt.RECVITEM1.IsNullOrEmpty()) collections.Add(accftt.RECVITEM1);
+            if (!accftt.RECVITEM2.IsNullOrEmpty()) collections.Add(accftt.RECVITEM2);
+            if (!accftt.RECVITEM3.IsNullOrEmpty()) collections.Add(accftt.RECVITEM3);
+            if (!accftt.RECVITEM4.IsNullOrEmpty()) collections.Add(accftt.RECVITEM4);
+            if (!accftt.RECVITEM5.IsNullOrEmpty()) collections.Add(accftt.RECVITEM5);
             collections.Sort();
             return LibData.Merge(",", false, collections.ToArray());
         }
         /// <summary>
         /// 獲取自組銷帳編號3
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="accftt"></param>
         /// <returns></returns>
-        private VirtualAccount3 GetVirtualAccount3(ACCFTT data)
+        private VirtualAccount3 GetVirtualAccount3(ACCFTT accftt)
         {
-            if (data.CHKNUMFLAG == "0" || data.CHKNUMFLAG == "N")
+            if (accftt.CHKNUMFLAG == "0" || accftt.CHKNUMFLAG == "N")
                 return VirtualAccount3.NoverifyCode;
             else
             {
-                if (data.CHKAMTFLAG == "Y")
+                if (accftt.CHKAMTFLAG == "Y")
                 {
-                    if (data.DUETERM == "1")
+                    if (accftt.DUETERM == "1")
                         return VirtualAccount3.SeqAmountPayEndDate;
                     else
                         return VirtualAccount3.SeqAmount;
                 }
                 else
                 {
-                    if (data.DUETERM == "1")
+                    if (accftt.DUETERM == "1")
                         return VirtualAccount3.SeqPayEndDate;
                     else
                         return VirtualAccount3.Seq;

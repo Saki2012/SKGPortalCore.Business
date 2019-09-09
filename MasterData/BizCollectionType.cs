@@ -1,4 +1,6 @@
-﻿using SKGPortalCore.Model.MasterData;
+﻿using SKGPortalCore.Data;
+using SKGPortalCore.Model.MasterData;
+using SKGPortalCore.Model.MasterData.OperateSystem;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,11 +9,14 @@ namespace SKGPortalCore.Business.MasterData
     /// <summary>
     /// 代收類別-商業邏輯
     /// </summary>
-    public class BizCollectionType
+    public class BizCollectionType:BizBase
     {
-        #region Public
+        #region Construct
+        public BizCollectionType(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
+        #endregion
 
-        public void LoopAction(CollectionTypeSet set)
+        #region Public
+        public void CheckData(CollectionTypeSet set)
         {
 
             if (CheckIsOverlap(set.CollectionTypeDetail)) return;//報錯 重複
