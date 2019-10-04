@@ -19,7 +19,7 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBill : BizBase
     {
-        public BizReceiptInfoBill(MessageLog message) : base(message) { }
+        public BizReceiptInfoBill(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         /// <summary>
         /// 獲取客戶資料對應的費用(清算手續費、系統商手續費、Hitrust費用)
         /// </summary>
@@ -29,11 +29,11 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="bankFee"></param>
         /// <param name="thirdFee"></param>
         /// <param name="hiTrustFee"></param>
-        private protected void GetBizCustFee(List<BizCustomerFeeDetailModel > detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
+        private protected void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
             if (!LibData.HasData(detail)) return;
-            BizCustomerFeeDetailModel  model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
+            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             hiTrustFee = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee).Fee;
             if (null != model)
             {
@@ -66,10 +66,27 @@ namespace SKGPortalCore.Business.BillData
                 }
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DataAccess"></param>
+        /// <param name="collectionTypeId"></param>
+        /// <param name="channelId"></param>
+        /// <param name="amount"></param>
+        /// <param name="chargePayType"></param>
+        /// <param name="channelFee"></param>
+        public void GetCollectionTypeSet(string collectionTypeId, string channelId, decimal amount, out ChargePayType chargePayType, out decimal channelFee)
+        {
+            channelFee = 0;
+            chargePayType = DataAccess.Set<CollectionTypeModel>().Find(collectionTypeId).ChargePayType;
+            //var c = DataAccess.Set<CollectionTypeDetailModel>().Where("CollectionTypeId={0} And ChannelId={1} And {2} Between SRange And ERange", collectionTypeId, channelId, amount);
+            var c = DataAccess.Set<CollectionTypeDetailModel>().Where("CollectionTypeId=@0 && ChannelId=@1 && SRange<=@2 && ERange>=@2", collectionTypeId, channelId, amount).ToList();
+            if (c.HasData()) channelFee = c[0].Fee;
+        }
     }
     public class BizReceiptInfoBillBANK : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillBankModel>
     {
-        public BizReceiptInfoBillBANK(MessageLog message) : base(message) { }
+        public BizReceiptInfoBillBANK(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillBankModel model)
         {
             if (model.RealAccount.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
@@ -90,13 +107,13 @@ namespace SKGPortalCore.Business.BillData
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillBankModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
             DateTime.TryParse($"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}", out DateTime tradeDate);
-            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust?.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CustomerCode = bizCust.BizCustomer.CustomerCode,
+                    CustomerCode = bizCust?.BizCustomer.CustomerCode,
                     CollectionTypeId = "Bank999",
                     ChannelId = model.Channel,
                     TransDate = tradeDate,
@@ -121,19 +138,19 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBillPOST : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillPostModel>
     {
-        public BizReceiptInfoBillPOST(MessageLog message) : base(message) { }
+        public BizReceiptInfoBillPOST(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillPostModel model)
         {
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
-            GetBizCustFee(bizCust.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Post, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            GetBizCustFee(bizCust?.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Post, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CustomerCode = bizCust.BizCustomer.CustomerCode,
+                    CustomerCode = bizCust?.BizCustomer.CustomerCode,
                     CollectionTypeId = model.CollectionType.Trim(),
                     ChannelId = model.Channel,
                     TransDate = model.TradeDate.ToDateTime(),
@@ -158,7 +175,7 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBillMARKET : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillMarketModel>
     {
-        public BizReceiptInfoBillMARKET(MessageLog message) : base(message) { }
+        public BizReceiptInfoBillMARKET(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillMarketModel model)
         {
         }
@@ -194,7 +211,7 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBillMARKETSPI : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillMarketSPIModel>
     {
-        public BizReceiptInfoBillMARKETSPI(MessageLog message) : base(message) { }
+        public BizReceiptInfoBillMARKETSPI(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillMarketSPIModel model)
         {
         }
@@ -230,7 +247,7 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBillFARM : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillFarmModel>
     {
-        public BizReceiptInfoBillFARM(MessageLog message) : base(message) { }
+        public BizReceiptInfoBillFARM(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillFarmModel model)
         {
 

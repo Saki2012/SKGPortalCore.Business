@@ -164,7 +164,7 @@ namespace SKGPortalCore.Business.Func
                 },
                 UserRoles = new List<CustUserRoleModel>()
                 {
-                    new CustUserRoleModel() { KeyId = $"{accftt.IDCODE.TrimStart('0')},admin", RoleId = "admin" }
+                    new CustUserRoleModel() { KeyId = $"{accftt.IDCODE.TrimStart('0')},admin", RoleId = "FrontEndAdmin" }
                 }
             };
         }

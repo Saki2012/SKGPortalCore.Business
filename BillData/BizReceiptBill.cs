@@ -38,7 +38,7 @@ namespace SKGPortalCore.Business.BillData
         public DateTime GetRemitDate(ReceiptBillModel model)
         {
             ChannelVerifyPeriodModel periodModel = DataAccess.Set<ChannelVerifyPeriodModel>().Find(new object[] { model.ChannelId, model.CollectionTypeId });
-            switch (periodModel.PayPeriodType)
+            switch (periodModel?.PayPeriodType)
             {
                 case PayPeriodType.NDay:
                     if (model.Channel.ChannelType == CanalisType.Market)

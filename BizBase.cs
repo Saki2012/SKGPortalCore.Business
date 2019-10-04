@@ -1,8 +1,6 @@
-﻿using GraphQL;
-using Microsoft.EntityFrameworkCore;
+﻿using System;
 using SKGPortalCore.Data;
 using SKGPortalCore.Model.MasterData.OperateSystem;
-using System;
 
 namespace SKGPortalCore.Business
 {
