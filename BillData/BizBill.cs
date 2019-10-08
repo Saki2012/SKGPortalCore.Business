@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
-using System.Collections.Generic;
-using System.Linq;
 namespace SKGPortalCore.Business.BillData
 {
     /// <summary>
@@ -38,7 +37,7 @@ namespace SKGPortalCore.Business.BillData
             set.Bill.PayAmount = 0m;
             if (set.BillDetail.HasData())
             {
-                foreach (var detail in set.BillDetail)
+                foreach (BillDetailModel detail in set.BillDetail)
                 {
                     set.Bill.PayAmount += detail.PayAmount;
                 }
@@ -46,7 +45,7 @@ namespace SKGPortalCore.Business.BillData
             set.Bill.HasPayAmount = 0m;
             if (set.BillReceiptDetail.HasData())
             {
-                foreach (var detail in set.BillReceiptDetail)
+                foreach (BillReceiptDetailModel detail in set.BillReceiptDetail)
                 {
                     set.Bill.HasPayAmount += detail.ReceiptBill.PayAmount;
                 }
@@ -223,7 +222,10 @@ namespace SKGPortalCore.Business.BillData
                 case 12:
                     {
                         foreach (char ch in bankcode)
+                        {
                             tv += ch.ToInt32();
+                        }
+
                         tv = tv * 13 % 11;
                     }
                     break;
@@ -231,7 +233,10 @@ namespace SKGPortalCore.Business.BillData
                     {
                         int[] arrtmp14 = { 10, 0, 9, 8, 7, 6, 5, 4, 3, 2, 3, 5, 7 };
                         for (int i = 0; i < arrtmp14.Length; i++)
+                        {
                             tv += bankcode[i].ToInt32() * arrtmp14[i];
+                        }
+
                         tv %= 11;
                     }
                     break;
@@ -239,7 +244,10 @@ namespace SKGPortalCore.Business.BillData
                     {
                         int[] arrtmp16 = { 10, 0, 9, 8, 7, 6, 5, 4, 3, 2, 3, 5, 7, 9, 7 };
                         for (int i = 0; i < arrtmp16.Length; i++)
+                        {
                             tv += bankcode[i].ToInt32() * arrtmp16[i];
+                        }
+
                         tv %= 11;
                     }
                     break;
@@ -263,7 +271,9 @@ namespace SKGPortalCore.Business.BillData
                         int[] arrtmp14 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 4, 6, 8, 1, 3, 5, 7, 9, 7, 5, 3 };
                         string code = amount.ToString().PadLeft(8, '0') + bankcode.PadLeft(13, '0');
                         for (int i = 0; i < arrtmp14.Length; i++)
+                        {
                             tv += code[i].ToInt32() * arrtmp14[i];
+                        }
                     }
                     break;
                 case 15:
@@ -271,7 +281,9 @@ namespace SKGPortalCore.Business.BillData
                         int[] arrtmp16 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 4, 6, 8, 1, 3, 5, 7, 9, 7, 5, 3, 1, 2 };
                         string code = amount.ToString().PadLeft(8, '0') + bankcode;
                         for (int i = 0; i < arrtmp16.Length; i++)
+                        {
                             tv += code[i].ToInt32() * arrtmp16[i];
+                        }
                     }
                     break;
             }
@@ -325,9 +337,13 @@ namespace SKGPortalCore.Business.BillData
             for (int i = 0; i < len; i++)
             {
                 if (i % 2 == 0)
+                {
                     cal1 += MarketEncode(bar.Substring(i, 1));
+                }
                 else
+                {
                     cal2 += MarketEncode(bar.Substring(i, 1));
+                }
             }
         }
         /// <summary>
@@ -361,7 +377,10 @@ namespace SKGPortalCore.Business.BillData
         {
             int result = 0;
             for (int i = 0; i < code.Length; i += 2)
+            {
                 result += code[i].ToInt32();
+            }
+
             return result;
         }
         /// <summary>
@@ -373,13 +392,23 @@ namespace SKGPortalCore.Business.BillData
         /// <returns></returns>
         private PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
         {
-            if (hasPayAmount == 0m) return PayStatus.Unpaid;
+            if (hasPayAmount == 0m)
+            {
+                return PayStatus.Unpaid;
+            }
+
             if (payAmount > hasPayAmount)
+            {
                 return PayStatus.UnderPaid;
+            }
             else if (payAmount == hasPayAmount)
+            {
                 return PayStatus.PaidComplete;
+            }
             else
+            {
                 return PayStatus.OverPaid;
+            }
         }
         /// <summary>
         /// 獲取帳單對應的超商代收類別

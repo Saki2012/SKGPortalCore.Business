@@ -19,7 +19,7 @@ namespace SKGPortalCore.Business.BillData
         {
             int count = 0;
             decimal payAmount = 0, fee = 0;
-            foreach (var s in set.ChannelEAccountBillDetail)
+            foreach (ChannelEAccountBillDetailModel s in set.ChannelEAccountBillDetail)
             {
                 payAmount += s.ReceiptBill.PayAmount;
                 fee += s.ReceiptBill.ChannelFee;
@@ -32,7 +32,7 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Private
-        
+
         #endregion
     }
 }

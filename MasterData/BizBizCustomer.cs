@@ -6,7 +6,7 @@ using SKGPortalCore.Model.MasterData.OperateSystem;
 
 namespace SKGPortalCore.Business.MasterData
 {
-    public class BizBizCustomer:BizBase
+    public class BizBizCustomer : BizBase
     {
         #region Construct
         public BizBizCustomer(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
@@ -17,7 +17,10 @@ namespace SKGPortalCore.Business.MasterData
         {
             foreach (BizCustomerFeeDetailModel bizCustFeeDetail in set.BizCustomerFeeDetail)
             {
-                if (!bizCustFeeDetail.FeeType.In(FeeType.ClearFee, FeeType.TotalFee, FeeType.HitrustFee)) set.BizCustomerFeeDetail.Remove(bizCustFeeDetail);
+                if (!bizCustFeeDetail.FeeType.In(FeeType.ClearFee, FeeType.TotalFee, FeeType.HitrustFee))
+                {
+                    set.BizCustomerFeeDetail.Remove(bizCustFeeDetail);
+                }
             }
         }
         #endregion

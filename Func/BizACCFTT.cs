@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
@@ -24,8 +22,16 @@ namespace SKGPortalCore.Business.Func
         /// <param name="accftt"></param>
         public CustomerSet SetCustomer(ACCFTT accftt, CustomerSet customerSet)
         {
-            if (null == customerSet) customerSet = new CustomerSet();
-            if (null == customerSet.Customer) customerSet.Customer = new CustomerModel();
+            if (null == customerSet)
+            {
+                customerSet = new CustomerSet();
+            }
+
+            if (null == customerSet.Customer)
+            {
+                customerSet.Customer = new CustomerModel();
+            }
+
             string custId = accftt.IDCODE.TrimStart('0');
             customerSet.Customer.CustomerId = custId;
             customerSet.Customer.CustomerName = accftt.CUSTNAME;
@@ -41,9 +47,21 @@ namespace SKGPortalCore.Business.Func
         /// <param name="accftt"></param>
         public BizCustomerSet SetBizCustomer(ACCFTT accftt, BizCustomerSet bizCustomerSet)
         {
-            if (null == bizCustomerSet) bizCustomerSet = new BizCustomerSet();
-            if (null == bizCustomerSet.BizCustomer) bizCustomerSet.BizCustomer = new BizCustomerModel();
-            if (null == bizCustomerSet.BizCustomerFeeDetail) bizCustomerSet.BizCustomerFeeDetail = new List<BizCustomerFeeDetailModel>();
+            if (null == bizCustomerSet)
+            {
+                bizCustomerSet = new BizCustomerSet();
+            }
+
+            if (null == bizCustomerSet.BizCustomer)
+            {
+                bizCustomerSet.BizCustomer = new BizCustomerModel();
+            }
+
+            if (null == bizCustomerSet.BizCustomerFeeDetail)
+            {
+                bizCustomerSet.BizCustomerFeeDetail = new List<BizCustomerFeeDetailModel>();
+            }
+
             string custId = accftt.IDCODE.TrimStart('0'); string custCode = accftt.KEYNO.Trim();
             bizCustomerSet.BizCustomer.CustomerId = custId;
             bizCustomerSet.BizCustomer.CustomerCode = custCode;
@@ -61,6 +79,7 @@ namespace SKGPortalCore.Business.Func
             int rowId = bizCustomerSet.BizCustomerFeeDetail.OrderBy(p => -p.RowId).Select(p => p.RowId).FirstOrDefault();
             bizCustomerSet.BizCustomerFeeDetail.ForEach(p => p.RowState = RowState.Delete);
             if (!accftt.ACTFEE.ToInt32().IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -71,7 +90,10 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.ACTFEE.ToDecimal(),
                     Percent = 0m
                 });
+            }
+
             if (!accftt.ACTFEEPT.ToInt32().IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -82,9 +104,15 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.ACTFEEPT.ToDecimal(),
                     Percent = 0m,
                 });
+            }
+
             if (!accftt.HIFLAG.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomer.HiTrustFlag = (HiTrustFlag)accftt.HIFLAG.ToByte();
+            }
+
             if (!accftt.HIFARE.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -95,8 +123,10 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.HIFARE.ToDecimal(),
                     Percent = 0m,
                 });
+            }
             //銀行-每筆總手續費
             if (!accftt.ACTFEEBEFT.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -107,8 +137,10 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.ACTFEEBEFT.ToDecimal(),
                     Percent = accftt.SHAREBEFTPERCENT.ToDecimal(),
                 });
+            }
             //超商-每筆總手續費
             if (!accftt.ACTFEEMART.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -119,8 +151,10 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.ACTFEEMART.ToDecimal(),
                     Percent = accftt.ACTPERCENT.ToDecimal(),
                 });
+            }
             //郵局-每筆總手續費
             if (!accftt.ACTFEEPOST.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -131,8 +165,10 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.ACTFEEPOST.ToDecimal(),
                     Percent = accftt.POSTPERCENT.ToDecimal(),
                 });
+            }
             //農金-清算手續費
             if (!accftt.AGRIFEE.IsNullOrEmpty())
+            {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
@@ -143,6 +179,8 @@ namespace SKGPortalCore.Business.Func
                     Fee = accftt.AGRIFEE.ToDecimal(),
                     Percent = 0,
                 });
+            }
+
             return bizCustomerSet;
         }
         /// <summary>
@@ -189,11 +227,30 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1")
+                        {
+                            channels.Add(ChannelValue.Post);
+                        }
+
+                        if (accftt.RSTORE1 == "1")
+                        {
+                            channels.Add(ChannelValue.Mart711);
+                        }
+
+                        if (accftt.RSTORE2 == "1")
+                        {
+                            channels.Add(ChannelValue.MartFML);
+                        }
+
+                        if (accftt.RSTORE3 == "1")
+                        {
+                            channels.Add(ChannelValue.MartOK);
+                        }
+
+                        if (accftt.RSTORE4 == "1")
+                        {
+                            channels.Add(ChannelValue.MartLIFE);
+                        }
                     }
                     break;
                 case "0":
@@ -203,11 +260,30 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1")
+                        {
+                            channels.Add(ChannelValue.Post);
+                        }
+
+                        if (accftt.RSTORE1 == "1")
+                        {
+                            channels.Add(ChannelValue.Mart711);
+                        }
+
+                        if (accftt.RSTORE2 == "1")
+                        {
+                            channels.Add(ChannelValue.MartFML);
+                        }
+
+                        if (accftt.RSTORE3 == "1")
+                        {
+                            channels.Add(ChannelValue.MartOK);
+                        }
+
+                        if (accftt.RSTORE4 == "1")
+                        {
+                            channels.Add(ChannelValue.MartLIFE);
+                        }
                     }
                     break;
                 case "1":
@@ -217,20 +293,54 @@ namespace SKGPortalCore.Business.Func
                         channels.Add(ChannelValue.ACH);
                         channels.Add(ChannelValue.ACHForPay);
                         channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1")
+                        {
+                            channels.Add(ChannelValue.Post);
+                        }
+
+                        if (accftt.RSTORE1 == "1")
+                        {
+                            channels.Add(ChannelValue.Mart711);
+                        }
+
+                        if (accftt.RSTORE2 == "1")
+                        {
+                            channels.Add(ChannelValue.MartFML);
+                        }
+
+                        if (accftt.RSTORE3 == "1")
+                        {
+                            channels.Add(ChannelValue.MartOK);
+                        }
+
+                        if (accftt.RSTORE4 == "1")
+                        {
+                            channels.Add(ChannelValue.MartLIFE);
+                        }
                     }
                     break;
                 case "2":
                     {
                         channels.Add(ChannelValue.Cash);
-                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.RSTORE1 == "1")
+                        {
+                            channels.Add(ChannelValue.Mart711);
+                        }
+
+                        if (accftt.RSTORE2 == "1")
+                        {
+                            channels.Add(ChannelValue.MartFML);
+                        }
+
+                        if (accftt.RSTORE3 == "1")
+                        {
+                            channels.Add(ChannelValue.MartOK);
+                        }
+
+                        if (accftt.RSTORE4 == "1")
+                        {
+                            channels.Add(ChannelValue.MartLIFE);
+                        }
                     }
                     break;
                 case "3":
@@ -240,18 +350,54 @@ namespace SKGPortalCore.Business.Func
                     break;
                 case "4":
                     {
-                        if (accftt.POSTFLAG == "1") channels.Add(ChannelValue.Post);
-                        if (accftt.RSTORE1 == "1") channels.Add(ChannelValue.Mart711);
-                        if (accftt.RSTORE2 == "1") channels.Add(ChannelValue.MartFML);
-                        if (accftt.RSTORE3 == "1") channels.Add(ChannelValue.MartOK);
-                        if (accftt.RSTORE4 == "1") channels.Add(ChannelValue.MartLIFE);
+                        if (accftt.POSTFLAG == "1")
+                        {
+                            channels.Add(ChannelValue.Post);
+                        }
+
+                        if (accftt.RSTORE1 == "1")
+                        {
+                            channels.Add(ChannelValue.Mart711);
+                        }
+
+                        if (accftt.RSTORE2 == "1")
+                        {
+                            channels.Add(ChannelValue.MartFML);
+                        }
+
+                        if (accftt.RSTORE3 == "1")
+                        {
+                            channels.Add(ChannelValue.MartOK);
+                        }
+
+                        if (accftt.RSTORE4 == "1")
+                        {
+                            channels.Add(ChannelValue.MartLIFE);
+                        }
                     }
                     break;
             }
-            if (accftt.AUTOFLAG == "1") channels.Add(ChannelValue.Deduct_Server); channels.Add(ChannelValue.Deduct_Client);
-            if (accftt.EBFLAG == "1") channels.Add(ChannelValue.EB);
-            if (accftt.CTBCFLAG == "1") channels.Add(ChannelValue.CTBC);
-            if (accftt.AGRIFLAG == "1") channels.Add(ChannelValue.Farm);
+            if (accftt.AUTOFLAG == "1")
+            {
+                channels.Add(ChannelValue.Deduct_Server);
+            }
+
+            channels.Add(ChannelValue.Deduct_Client);
+            if (accftt.EBFLAG == "1")
+            {
+                channels.Add(ChannelValue.EB);
+            }
+
+            if (accftt.CTBCFLAG == "1")
+            {
+                channels.Add(ChannelValue.CTBC);
+            }
+
+            if (accftt.AGRIFLAG == "1")
+            {
+                channels.Add(ChannelValue.Farm);
+            }
+
             channels.Sort();
             return LibData.Merge(",", false, channels.ToArray());
         }
@@ -263,11 +409,31 @@ namespace SKGPortalCore.Business.Func
         private string GetCollectionType(ACCFTT accftt)
         {
             List<string> collections = new List<string>();
-            if (!accftt.RECVITEM1.IsNullOrEmpty()) collections.Add(accftt.RECVITEM1);
-            if (!accftt.RECVITEM2.IsNullOrEmpty()) collections.Add(accftt.RECVITEM2);
-            if (!accftt.RECVITEM3.IsNullOrEmpty()) collections.Add(accftt.RECVITEM3);
-            if (!accftt.RECVITEM4.IsNullOrEmpty()) collections.Add(accftt.RECVITEM4);
-            if (!accftt.RECVITEM5.IsNullOrEmpty()) collections.Add(accftt.RECVITEM5);
+            if (!accftt.RECVITEM1.IsNullOrEmpty())
+            {
+                collections.Add(accftt.RECVITEM1);
+            }
+
+            if (!accftt.RECVITEM2.IsNullOrEmpty())
+            {
+                collections.Add(accftt.RECVITEM2);
+            }
+
+            if (!accftt.RECVITEM3.IsNullOrEmpty())
+            {
+                collections.Add(accftt.RECVITEM3);
+            }
+
+            if (!accftt.RECVITEM4.IsNullOrEmpty())
+            {
+                collections.Add(accftt.RECVITEM4);
+            }
+
+            if (!accftt.RECVITEM5.IsNullOrEmpty())
+            {
+                collections.Add(accftt.RECVITEM5);
+            }
+
             collections.Sort();
             return LibData.Merge(",", false, collections.ToArray());
         }
@@ -279,22 +445,32 @@ namespace SKGPortalCore.Business.Func
         private VirtualAccount3 GetVirtualAccount3(ACCFTT accftt)
         {
             if (accftt.CHKNUMFLAG == "0" || accftt.CHKNUMFLAG == "N")
+            {
                 return VirtualAccount3.NoverifyCode;
+            }
             else
             {
                 if (accftt.CHKAMTFLAG == "Y")
                 {
                     if (accftt.DUETERM == "1")
+                    {
                         return VirtualAccount3.SeqAmountPayEndDate;
+                    }
                     else
+                    {
                         return VirtualAccount3.SeqAmount;
+                    }
                 }
                 else
                 {
                     if (accftt.DUETERM == "1")
+                    {
                         return VirtualAccount3.SeqPayEndDate;
+                    }
                     else
+                    {
                         return VirtualAccount3.Seq;
+                    }
                 }
             }
         }

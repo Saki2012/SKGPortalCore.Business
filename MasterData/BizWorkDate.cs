@@ -1,8 +1,8 @@
-﻿using SKGPortalCore.Model.MasterData;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using SKGPortalCore.Model.MasterData;
 
 namespace SKGPortalCore.Business.MasterData
 {
@@ -14,14 +14,14 @@ namespace SKGPortalCore.Business.MasterData
         public WorkDateModel[] SyncWorkDate()
         {
             string url = "http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-000077-002";
-            var request = WebRequest.Create(url);
-            var response = request.GetResponse() as HttpWebResponse;
-            var responseStream = response.GetResponseStream();
+            WebRequest request = WebRequest.Create(url);
+            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+            Stream responseStream = response.GetResponseStream();
             using StreamReader reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
-            var srcString = reader.ReadToEnd();
-            var jsonData = Newtonsoft.Json.JsonConvert
+            string srcString = reader.ReadToEnd();
+            HolidayOpenData jsonData = Newtonsoft.Json.JsonConvert
                 .DeserializeObject<HolidayOpenData>(srcString);
-            foreach (var holiday in jsonData.result.records)
+            foreach (WorkDateModel holiday in jsonData.result.records)
             {
                 Console.WriteLine($"Date: {holiday.Date}, IsHoliday: {holiday.IsHoliday}, Category: {holiday.HolidayCategory}");
             }

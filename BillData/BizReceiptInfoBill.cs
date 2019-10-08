@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
-
-using System.Linq;
 using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.BillData
@@ -32,7 +30,11 @@ namespace SKGPortalCore.Business.BillData
         private protected void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
-            if (!LibData.HasData(detail)) return;
+            if (!LibData.HasData(detail))
+            {
+                return;
+            }
+
             BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             hiTrustFee = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee).Fee;
             if (null != model)
@@ -80,8 +82,11 @@ namespace SKGPortalCore.Business.BillData
             channelFee = 0;
             chargePayType = DataAccess.Set<CollectionTypeModel>().Find(collectionTypeId).ChargePayType;
             //var c = DataAccess.Set<CollectionTypeDetailModel>().Where("CollectionTypeId={0} And ChannelId={1} And {2} Between SRange And ERange", collectionTypeId, channelId, amount);
-            var c = DataAccess.Set<CollectionTypeDetailModel>().Where("CollectionTypeId=@0 && ChannelId=@1 && SRange<=@2 && ERange>=@2", collectionTypeId, channelId, amount).ToList();
-            if (c.HasData()) channelFee = c[0].Fee;
+            List<CollectionTypeDetailModel> c = DataAccess.Set<CollectionTypeDetailModel>().Where("CollectionTypeId=@0 && ChannelId=@1 && SRange<=@2 && ERange>=@2", collectionTypeId, channelId, amount).ToList();
+            if (c.HasData())
+            {
+                channelFee = c[0].Fee;
+            }
         }
     }
     public class BizReceiptInfoBillBANK : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillBankModel>

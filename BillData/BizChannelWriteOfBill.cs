@@ -1,8 +1,8 @@
-﻿using SKGPortalCore.Data;
+﻿using System;
+using System.Collections.Generic;
+using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
-using System;
-using System.Collections.Generic;
 
 namespace SKGPortalCore.Business.BillData
 {
@@ -30,26 +30,48 @@ namespace SKGPortalCore.Business.BillData
             rc.Master.Sort(new Comparison<ChannelWriteOfDetailModel>((x, y) =>
           {
               int result = x.ChannelEAccountBill.ChannelId.CompareTo(y.ChannelEAccountBill.ChannelId);
-              if (result == 0) result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.ChannelEAccountBill.CollectionTypeId);
-              else return result;
+              if (result == 0)
+              {
+                  result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.ChannelEAccountBill.CollectionTypeId);
+              }
+              else
+              {
+                  return result;
+              }
+
               return result;
           }));
             rc.Detail.Sort(new Comparison<CashFlowWriteOfDetailModel>((x, y) =>
            {
                int result = x.CashFlowBill.ChannelId.CompareTo(y.CashFlowBill.ChannelId);
-               if (result == 0) result = x.CashFlowBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
-               else return result;
+               if (result == 0)
+               {
+                   result = x.CashFlowBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
+               }
+               else
+               {
+                   return result;
+               }
+
                return result;
            }));
             rc.CompareFunc = new Func<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel, int>((x, y) =>
              {
                  int result = x.ChannelEAccountBill.ChannelId.CompareTo(y.CashFlowBill.ChannelId);
-                 if (result == 0) result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
-                 else return result;
+                 if (result == 0)
+                 {
+                     result = x.ChannelEAccountBill.CollectionTypeId.CompareTo(y.CashFlowBill.CollectionTypeId);
+                 }
+                 else
+                 {
+                     return result;
+                 }
+
                  return result;
              });
 
             if (rc.Enable)
+            {
                 while (!rc.IsEof)
                 {
                     rc.BackToBookMark();
@@ -62,6 +84,8 @@ namespace SKGPortalCore.Business.BillData
                     }
                     rc.MoveNext();
                 }
+            }
+
             return val;
         }
 

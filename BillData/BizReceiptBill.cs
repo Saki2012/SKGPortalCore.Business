@@ -1,11 +1,11 @@
-﻿using SKGPortalCore.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
-using System;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace SKGPortalCore.Business.BillData
 {
@@ -24,7 +24,9 @@ namespace SKGPortalCore.Business.BillData
         {
             set.ReceiptBill.ToBillNo = GetBillNo(set.ReceiptBill.CompareCodeForCheck);
             if (action == FuncAction.Create)//未來若有修改RemitDate的情況，需進行差異調整
+            {
                 set.ReceiptBill.RemitDate = GetRemitDate(set.ReceiptBill);
+            }
         }
 
 
@@ -42,9 +44,14 @@ namespace SKGPortalCore.Business.BillData
             {
                 case PayPeriodType.NDay:
                     if (model.Channel.ChannelType == CanalisType.Market)
+                    {
                         return GetMarketTime(model.ChannelId);
+                    }
                     else
+                    {
                         return GetDayTime();
+                    }
+
                 case PayPeriodType.Week:
                     return GetWeekTime(DateTime.Now);
                 case PayPeriodType.TenDay:

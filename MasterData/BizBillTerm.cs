@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SKGPortalCore.Data;
+﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
-using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 
