@@ -44,14 +44,9 @@ namespace SKGPortalCore.Business.BillData
             {
                 case PayPeriodType.NDay:
                     if (model.Channel.ChannelType == CanalisType.Market)
-                    {
                         return GetMarketTime(model.ChannelId);
-                    }
                     else
-                    {
                         return GetDayTime();
-                    }
-
                 case PayPeriodType.Week:
                     return GetWeekTime(DateTime.Now);
                 case PayPeriodType.TenDay:

@@ -22,15 +22,8 @@ namespace SKGPortalCore.Business.Func
         /// <param name="accftt"></param>
         public CustomerSet SetCustomer(ACCFTT accftt, CustomerSet customerSet)
         {
-            if (null == customerSet)
-            {
-                customerSet = new CustomerSet();
-            }
-
-            if (null == customerSet.Customer)
-            {
-                customerSet.Customer = new CustomerModel();
-            }
+            if (null == customerSet) customerSet = new CustomerSet();
+            if (null == customerSet.Customer) customerSet.Customer = new CustomerModel();
 
             string custId = accftt.IDCODE.TrimStart('0');
             customerSet.Customer.CustomerId = custId;
@@ -70,6 +63,10 @@ namespace SKGPortalCore.Business.Func
             bizCustomerSet.BizCustomer.VirtualAccountLen = (10 + custCode.Length).ToByte();
             bizCustomerSet.BizCustomer.ChannelIds = GetChannel(accftt);
             bizCustomerSet.BizCustomer.CollectionTypeIds = GetCollectionType(accftt);
+#if DEBUG
+            bizCustomerSet.BizCustomer.VirtualAccount1 = VirtualAccount1.BillTerm;
+            bizCustomerSet.BizCustomer.VirtualAccount2 = VirtualAccount2.PayerNo;
+#endif
             bizCustomerSet.BizCustomer.VirtualAccount3 = GetVirtualAccount3(accftt);
             bizCustomerSet.BizCustomer.AccountStatus = AccountStatus.Unable;
             bizCustomerSet.BizCustomer.EntrustCustId = accftt.CUSTID;

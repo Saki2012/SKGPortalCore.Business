@@ -98,8 +98,8 @@ namespace SKGPortalCore.Business.BillData
             else if (!model.RealAccount.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }
             string tradedate = $"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}";
             if (!DateTime.TryParse(tradedate, out _)) { Message.AddErrorMessage(MessageCode.Code1011, model.Id, ResxManage.GetDescription(model.TradeDate)); }
-            if (model.CompareCode.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.CompareCode)); }
-            else if (!model.CompareCode.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.CompareCode), model.CompareCode); }
+            //if (model.CompareCode.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.CompareCode)); }
+            //else if (!model.CompareCode.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.CompareCode), model.CompareCode); }
             if (model.PN.CompareTo("+") != 0 && model.PN.CompareTo("-") != 0) { Message.AddErrorMessage(MessageCode.Code1012, model.Id); }
             if (model.Amount.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Amount)); }
             else if (!model.Amount.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Amount), model.Amount); }

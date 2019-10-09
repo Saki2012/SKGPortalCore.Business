@@ -116,7 +116,7 @@ namespace SKGPortalCore.Business.BillData
                     vir3 = bill.PayEndDate.Year.ToString().Substring(3, 1) + bill.PayEndDate.DayOfYear.ToString().PadLeft(3, '0');
                     break;
             }
-            return $"{vir3}{vir1}{vir2}";
+            return $"{bill.CustomerCode}{vir3}{vir1}{vir2}";
         }
         /// <summary>
         /// 獲取銀行條碼
