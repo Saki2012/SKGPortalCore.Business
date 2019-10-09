@@ -96,7 +96,7 @@ namespace SKGPortalCore.Business.BillData
         {
             List<string> bills = DataAccess.Set<BillModel>().Where(p => p.CompareCodeForCheck == compareCodeForCheck &&
              (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).ToList();
-            return bills.HasData() ? bills[0] : string.Empty;
+            return bills.HasData() ? bills[0] : null;
         }
 
 

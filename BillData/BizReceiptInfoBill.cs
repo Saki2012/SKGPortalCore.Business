@@ -34,9 +34,9 @@ namespace SKGPortalCore.Business.BillData
             {
                 return;
             }
-
-            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
-            hiTrustFee = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee).Fee;
+            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee);
+            hiTrustFee = null == model ? 0 : model.Fee;
+            model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             if (null != model)
             {
                 switch (model.FeeType)
@@ -143,13 +143,17 @@ namespace SKGPortalCore.Business.BillData
     }
     public class BizReceiptInfoBillPOST : BizReceiptInfoBill, IBizReceiptInfoBill<ReceiptInfoBillPostModel>
     {
+        private List<ChannelMapModel> ChannelMap;
         public BizReceiptInfoBillPOST(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
         public void CheckData(ReceiptInfoBillPostModel model)
         {
+            ChannelMap = DataAccess.Set<ChannelMapModel>().ToList();
         }
         public ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, BizCustomerSet bizCust, ChargePayType chargePayType, decimal channelFee, string compareCodeForCheck)
         {
             GetBizCustFee(bizCust?.BizCustomerFeeDetail, channelFee, chargePayType, CanalisType.Post, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+
+
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -157,10 +161,10 @@ namespace SKGPortalCore.Business.BillData
                     BillNo = "",
                     CustomerCode = bizCust?.BizCustomer.CustomerCode,
                     CollectionTypeId = model.CollectionType.Trim(),
-                    ChannelId = model.Channel,
-                    TransDate = model.TradeDate.ToDateTime(),
-                    TradeDate = model.TradeDate.ToDateTime(),
-                    RemitDate = model.TradeDate.ToDateTime(),
+                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel)?.ChannelId,
+                    TransDate = model.TradeDate.ROCDateToCEDate(),
+                    TradeDate = model.TradeDate.ROCDateToCEDate(),
+                    RemitDate = model.TradeDate.ROCDateToCEDate(),
                     PayAmount = model.Amount.ToDecimal(),
                     BankCode = model.CompareCode,
                     CompareCode = model.CompareCode,

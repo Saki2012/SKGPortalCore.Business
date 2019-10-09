@@ -36,8 +36,8 @@ namespace SKGPortalCore.Business.Func
             customerSet.Customer.CustomerId = custId;
             customerSet.Customer.CustomerName = accftt.CUSTNAME;
             customerSet.Customer.DeptId = accftt.APPBECODE;
-            customerSet.Customer.BillTermLen = 3;
-            customerSet.Customer.PayerNoLen = 6;
+            customerSet.Customer.BillTermLen = 3;//默認三碼
+            customerSet.Customer.PayerNoLen = 6;//默認六碼
             customerSet.Customer.IsSysCust = false;
             return customerSet;
         }
