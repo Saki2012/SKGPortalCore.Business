@@ -390,7 +390,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="hasPayAmount"></param>
         /// <param name="receiptBillCount"></param>
         /// <returns></returns>
-        private PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
+        public PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
         {
             if (hasPayAmount == 0m)
             {

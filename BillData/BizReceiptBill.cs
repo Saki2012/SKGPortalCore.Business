@@ -19,27 +19,43 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Public
-
-        public void SetData(ReceiptBillSet set, FuncAction action)
+        /// <summary>
+        /// 設置欄位值
+        /// </summary>
+        /// <param name="set"></param>
+        /// <param name="action"></param>
+        public void SetData(ReceiptBillSet set, ChannelVerifyPeriodModel periodModel, FuncAction action)
         {
             set.ReceiptBill.ToBillNo = GetBillNo(set.ReceiptBill.CompareCodeForCheck);
             if (action == FuncAction.Create)//未來若有修改RemitDate的情況，需進行差異調整
-            {
-                set.ReceiptBill.RemitDate = GetRemitDate(set.ReceiptBill);
-            }
+                set.ReceiptBill.RemitDate = GetRemitDate(periodModel, set.ReceiptBill);
         }
+        /// <summary>
+        /// 設置欄位值
+        /// </summary>
+        /// <param name="set"></param>
+        /// <param name="compareCodeForCheck"></param>
+        /// <param name="chargePayType"></param>
+        /// <param name="channelFee"></param>
+        public void SetData(ReceiptBillSet set, List<BizCustomerFeeDetailModel> bizCustFee, string compareCodeForCheck, ChargePayType chargePayType, decimal channelFee)
+        {
+            GetBizCustFee(bizCustFee, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
+            set.ReceiptBill.BankFee = bankFee;
+            set.ReceiptBill.ThirdFee = thirdFee;
+            set.ReceiptBill.HiTrustFee = hiTrustFee;
 
-
-
+            set.ReceiptBill.ChannelFee = channelFee;
+            set.ReceiptBill.CompareCodeForCheck = compareCodeForCheck;
+            set.ReceiptBill.ChargePayType = chargePayType;
+        }
         /// <summary>
         /// 獲取預計匯款日
         /// </summary>
         /// <param name="model"></param>
         /// <param name="periodModel"></param>
         /// <returns></returns>
-        public DateTime GetRemitDate(ReceiptBillModel model)
+        public DateTime GetRemitDate(ChannelVerifyPeriodModel periodModel, ReceiptBillModel model)
         {
-            ChannelVerifyPeriodModel periodModel = DataAccess.Set<ChannelVerifyPeriodModel>().Find(new object[] { model.ChannelId, model.CollectionTypeId });
             switch (periodModel?.PayPeriodType)
             {
                 case PayPeriodType.NDay:
@@ -81,7 +97,6 @@ namespace SKGPortalCore.Business.BillData
                 }
             };
         }
-
         /// <summary>
         /// 獲取對應的帳單編號
         /// </summary>
@@ -93,8 +108,6 @@ namespace SKGPortalCore.Business.BillData
              (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).ToList();
             return bills.HasData() ? bills[0] : null;
         }
-
-
         /// <summary>
         /// 計算 每筆總手續費之「系統商手續費」(內扣)
         /// (每筆總手續費-通路手續費) * (100-分潤%)/100。
@@ -121,6 +134,46 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Private
+        private protected void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
+        {
+            bankFee = 0; thirdFee = 0; hiTrustFee = 0;
+            if (!LibData.HasData(detail)) return;
+            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee);
+            hiTrustFee = null == model ? 0 : model.Fee;
+            model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
+            if (null != model)
+            {
+                switch (model.FeeType)
+                {
+                    case FeeType.ClearFee:
+                        {
+                            bankFee = model.Fee;
+                        }
+                        break;
+                    case FeeType.TotalFee:
+                        {
+                            switch (chargePayType)
+                            {
+                                case ChargePayType.Deduction:
+                                    {
+                                        thirdFee = BizReceiptBill.FeeDeduct(model.Fee, channelFee, model.Percent);
+                                        bankFee = model.Fee - thirdFee;
+                                    }
+                                    break;
+                                case ChargePayType.Increase:
+                                    {
+                                        thirdFee = BizReceiptBill.FeePlus(model.Fee, model.Percent);
+                                        bankFee = model.Fee - thirdFee;
+                                    }
+                                    break;
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+
+
         /// <summary>
         /// 獲取月結的預計匯款日
         /// </summary>
@@ -286,7 +339,6 @@ namespace SKGPortalCore.Business.BillData
             return DateTime.Now;
 
         }
-
         #endregion
     }
 }
