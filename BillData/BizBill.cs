@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using OfficeOpenXml;
+using OfficeOpenXml.Table;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
@@ -30,10 +32,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="action"></param>
         public void SetData(BillSet set/*, FuncAction action*/)
         {
-            //Message.AddErrorMessage(MessageCode.Code0001, "測試欄位");
-            //if (action == FuncAction.Create)
             SetBarCode(set.Bill);
-
             set.Bill.PayAmount = 0m;
             if (set.BillDetail.HasData())
             {
@@ -60,6 +59,16 @@ namespace SKGPortalCore.Business.BillData
         {
             if (set.Bill.BizCustomer?.VirtualAccountLen != set.Bill.BankBarCode?.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
             if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
+        }
+
+        public void ExportExcel(List<BillModel> bills) 
+        {
+            using ExcelPackage excel = new ExcelPackage();
+            var workSheet = excel.Workbook.Worksheets.Add("Sheet1");
+            workSheet.Cells["A1"].LoadFromCollection(bills, true, TableStyles.Medium12);
+            //...
+            workSheet.Cells[$"A{bills.Count + 2}"].LoadFromCollection(bills, true, TableStyles.Medium12);
+            excel.Save();
         }
         #endregion
 

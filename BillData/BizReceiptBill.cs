@@ -104,9 +104,9 @@ namespace SKGPortalCore.Business.BillData
         /// <returns></returns>
         public string GetBillNo(string compareCodeForCheck)
         {
-            List<string> bills = DataAccess.Set<BillModel>().Where(p => p.CompareCodeForCheck == compareCodeForCheck &&
-             (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).ToList();
-            return bills.HasData() ? bills[0] : null;
+            string bill = DataAccess.Set<BillModel>().Where(p => p.CompareCodeForCheck == compareCodeForCheck &&
+             (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).FirstOrDefault();
+            return bill;
         }
         /// <summary>
         /// 計算 每筆總手續費之「系統商手續費」(內扣)
