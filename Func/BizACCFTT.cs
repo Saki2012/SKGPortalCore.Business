@@ -8,7 +8,7 @@ using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
-    internal static class BizACCFTT
+    public static class BizACCFTT
     {
         #region Public
         /// <summary>

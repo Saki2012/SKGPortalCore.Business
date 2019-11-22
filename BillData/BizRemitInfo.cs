@@ -5,7 +5,7 @@ using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
-    internal static class BizRemitInfo
+    public static class BizRemitInfo
     {
         #region Public
         public static CashFlowBillSet GetCashFlowBillSet(RemitInfoModel model)
