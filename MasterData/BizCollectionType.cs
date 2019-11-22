@@ -9,14 +9,10 @@ namespace SKGPortalCore.Business.MasterData
     /// <summary>
     /// 代收類別-商業邏輯
     /// </summary>
-    public class BizCollectionType : BizBase
+    public static class BizCollectionType 
     {
-        #region Construct
-        public BizCollectionType(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
-        #endregion
-
         #region Public
-        public void CheckData(CollectionTypeSet set)
+        public static void CheckData(CollectionTypeSet set)
         {
 
             if (CheckIsOverlap(set.CollectionTypeDetail))
@@ -37,7 +33,7 @@ namespace SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="detail"></param>
         /// <returns></returns>
-        private bool CheckSERange(CollectionTypeDetailModel detail)
+        private static bool CheckSERange(CollectionTypeDetailModel detail)
         {
             return detail.SRange > detail.ERange;
         }
@@ -46,7 +42,7 @@ namespace SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="detail"></param>
         /// <returns></returns>
-        private bool CheckIsOverlap(List<CollectionTypeDetailModel> detail)
+        private static bool CheckIsOverlap(List<CollectionTypeDetailModel> detail)
         {
             return detail.Where(p => detail.Where(
                     q => p.RowId != q.RowId && (p.SRange >= q.SRange && p.SRange <= q.ERange

@@ -9,18 +9,14 @@ using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.Func
 {
-    public class BizACCFTT : BizBase
+    public  static class BizACCFTT
     {
-        #region Construct
-        public BizACCFTT(MessageLog message) : base(message) { }
-        #endregion
-
         #region Public
         /// <summary>
         /// 服務申請書對應客戶資料
         /// </summary>
         /// <param name="accftt"></param>
-        public CustomerSet SetCustomer(ACCFTT accftt, CustomerSet customerSet)
+        public static CustomerSet SetCustomer(ACCFTT accftt, CustomerSet customerSet)
         {
             if (null == customerSet) customerSet = new CustomerSet();
             if (null == customerSet.Customer) customerSet.Customer = new CustomerModel();
@@ -38,7 +34,7 @@ namespace SKGPortalCore.Business.Func
         /// 服務申請書對應商戶資料
         /// </summary>
         /// <param name="accftt"></param>
-        public BizCustomerSet SetBizCustomer(ACCFTT accftt, BizCustomerSet bizCustomerSet)
+        public static BizCustomerSet SetBizCustomer(ACCFTT accftt, BizCustomerSet bizCustomerSet)
         {
             if (null == bizCustomerSet)
             {
@@ -185,7 +181,7 @@ namespace SKGPortalCore.Business.Func
         /// </summary>
         /// <param name="accftt"></param>
         /// <returns></returns>
-        public CustUserSet AddAdminAccount(ACCFTT accftt)
+        public static CustUserSet AddAdminAccount(ACCFTT accftt)
         {
             return new CustUserSet()
             {
@@ -211,7 +207,7 @@ namespace SKGPortalCore.Business.Func
         /// </summary>
         /// <param name="accftt"></param>
         /// <returns></returns>
-        private string GetChannel(ACCFTT accftt)
+        private static string GetChannel(ACCFTT accftt)
         {
             List<string> channels = new List<string>();
             switch (accftt.CHANNEL)
@@ -403,7 +399,7 @@ namespace SKGPortalCore.Business.Func
         /// </summary>
         /// <param name="accftt"></param>
         /// <returns></returns>
-        private string GetCollectionType(ACCFTT accftt)
+        private static string GetCollectionType(ACCFTT accftt)
         {
             List<string> collections = new List<string>();
             if (!accftt.RECVITEM1.IsNullOrEmpty())
@@ -439,7 +435,7 @@ namespace SKGPortalCore.Business.Func
         /// </summary>
         /// <param name="accftt"></param>
         /// <returns></returns>
-        private VirtualAccount3 GetVirtualAccount3(ACCFTT accftt)
+        private static VirtualAccount3 GetVirtualAccount3(ACCFTT accftt)
         {
             if (accftt.CHKNUMFLAG == "0" || accftt.CHKNUMFLAG == "N")
             {

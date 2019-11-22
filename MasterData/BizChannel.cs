@@ -8,10 +8,8 @@ using SKGPortalCore.Model.MasterData.OperateSystem;
 
 namespace SKGPortalCore.Business.MasterData
 {
-    public class BizChannel : BizBase
+    public static class BizChannel 
     {
-        #region Construct
-        public BizChannel(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
-        #endregion
+
     }
 }

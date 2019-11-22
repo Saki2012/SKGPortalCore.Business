@@ -6,14 +6,10 @@ using SKGPortalCore.Model.MasterData.OperateSystem;
 
 namespace SKGPortalCore.Business.MasterData
 {
-    public class BizBizCustomer : BizBase
+    public static class BizBizCustomer
     {
-        #region Construct
-        public BizBizCustomer(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
-        #endregion
-
         #region Public
-        public void CheckData(BizCustomerSet set)
+        public static void CheckData(BizCustomerSet set)
         {
             foreach (BizCustomerFeeDetailModel bizCustFeeDetail in set.BizCustomerFeeDetail)
             {

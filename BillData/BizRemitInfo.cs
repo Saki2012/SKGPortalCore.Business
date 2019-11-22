@@ -6,11 +6,10 @@ using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Business.BillData
 {
-    public class BizRemitInfo : BizBase
+    public static class BizRemitInfo 
     {
-        public BizRemitInfo(MessageLog message) : base(message) { }
-
-        public CashFlowBillSet GetCashFlowBillSet(RemitInfoModel model)
+        #region Public
+        public static CashFlowBillSet GetCashFlowBillSet(RemitInfoModel model)
         {
             return new CashFlowBillSet()
             {
@@ -26,5 +25,6 @@ namespace SKGPortalCore.Business.BillData
                 }
             };
         }
+        #endregion
     }
 }

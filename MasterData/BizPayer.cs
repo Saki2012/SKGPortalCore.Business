@@ -4,17 +4,13 @@ using SKGPortalCore.Model.MasterData;
 
 namespace SKGPortalCore.Business.MasterData
 {
-    public class BizPayer : BizBase
+    public static class BizPayer
     {
-        #region Construct
-        public BizPayer(MessageLog message) : base(message) { }
-        #endregion
-
         #region Public
         //保存前
-        public void CheckData(PayerSet set)
+        public static void CheckData(MessageLog Message, PayerSet set)
         {
-            CheckPayerNo(set.Payer);
+            CheckPayerNo( Message, set.Payer);
         }
         #endregion
 
@@ -23,7 +19,7 @@ namespace SKGPortalCore.Business.MasterData
         /// 檢查「繳款人編號」
         /// </summary>
         /// <param name="payer"></param>
-        private void CheckPayerNo(PayerModel payer)
+        private static void CheckPayerNo(MessageLog Message, PayerModel payer)
         {
             if (payer.PayerNo.Length != payer.Customer.PayerNoLen)
             {

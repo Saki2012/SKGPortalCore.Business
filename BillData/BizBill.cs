@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Table;
+using pdftron.PDF;
+using pdftron.SDF;
+using SKGPortalCore.Business.Report;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
@@ -13,15 +17,11 @@ namespace SKGPortalCore.Business.BillData
     /// <summary>
     /// 帳單-商業邏輯
     /// </summary>
-    public class BizBill : BizBase
+    public static class BizBill
     {
         #region Const
         private const string str1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ+%-. $/1234567890";
         private const string str2 = "1234567891234567892345678912678901234567890";
-        #endregion
-
-        #region Construct
-        public BizBill(MessageLog message, ApplicationDbContext dataAccess = null, IUserModel user = null) : base(message, dataAccess, user) { }
         #endregion
 
         #region Public
@@ -30,9 +30,9 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public void SetData(BillSet set/*, FuncAction action*/)
+        public static void SetData(BillSet set, MessageLog Message, ApplicationDbContext DataAccess)
         {
-            SetBarCode(set.Bill);
+            SetBarCode(DataAccess, set.Bill);
             set.Bill.PayAmount = 0m;
             if (set.BillDetail.HasData())
             {
@@ -55,13 +55,13 @@ namespace SKGPortalCore.Business.BillData
         /// 檢查資料
         /// </summary>
         /// <param name="set"></param>
-        public void CheckData(BillSet set)
+        public static void CheckData(BillSet set ,MessageLog Message,ApplicationDbContext DataAccess)
         {
             if (set.Bill.BizCustomer?.VirtualAccountLen != set.Bill.BankBarCode?.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
-            if (CheckBankCodeExist(set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
+            if (CheckBankCodeExist(DataAccess,set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
         }
 
-        public void ExportExcel(List<BillModel> bills) 
+        public static void ExportExcel(List<BillModel> bills)
         {
             using ExcelPackage excel = new ExcelPackage();
             var workSheet = excel.Workbook.Worksheets.Add("Sheet1");
@@ -70,6 +70,37 @@ namespace SKGPortalCore.Business.BillData
             workSheet.Cells[$"A{bills.Count + 2}"].LoadFromCollection(bills, true, TableStyles.Medium12);
             excel.Save();
         }
+        public static void ReadExcel()
+        {
+            using FileStream fs = new FileStream(@"C:\Read.xlsx", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using ExcelPackage excel = new ExcelPackage(fs);
+            ExcelWorksheet sheet = excel.Workbook.Worksheets[1];//取得Sheet1
+            int startRowNumber = sheet.Dimension.Start.Row;//起始列編號，從1算起
+            int endRowNumber = sheet.Dimension.End.Row;//結束列編號，從1算起
+            int startColumn = sheet.Dimension.Start.Column;//開始欄編號，從1算起
+            int endColumn = sheet.Dimension.End.Column;//結束欄編號，從1算起
+            bool isHeader = true;//有包含標題
+            if (isHeader) startRowNumber += 1;
+            for (int currentRow = startRowNumber; currentRow <= endRowNumber; currentRow++)
+            {
+                ExcelRange range = sheet.Cells[currentRow, startColumn, currentRow, endColumn];//抓出目前的Excel列
+                if (range.Any(c => !string.IsNullOrEmpty(c.Text)) == false)//這是一個完全空白列(使用者用Delete鍵刪除動作)
+                    continue;//略過此列
+                //讀值
+                string cellValue = sheet.Cells[currentRow, 1].Text;//讀取格式化過後的文字(讀取使用者看到的文字)
+            }
+        }
+        public static void PrintBill(BillSet set)
+        {
+            using PDFDoc pdfdoc = new PDFDoc();
+            Convert.OfficeToPDF(pdfdoc, $"{ReportTemplate.TemplatePath}{ReportTemplate.BillTemplate}.docx", null);
+            Page pg = pdfdoc.GetPage(1);
+            ContentReplacer replacer = new ContentReplacer();
+            //SetData();
+            //foreach (string key in Dic.Keys) replacer.AddString(key, Dic[key]);
+            replacer.Process(pg);
+            pdfdoc.Save($"{ReportTemplate.TemplateOutputPath}{ReportTemplate.ReceiptTemplate}{ReportTemplate.Resx}.pdf", SDFDoc.SaveOptions.e_linearized);
+        }
         #endregion
 
         #region Private
@@ -77,18 +108,18 @@ namespace SKGPortalCore.Business.BillData
         /// 設置條碼編碼
         /// </summary>
         /// <param name="bill"></param>
-        private void SetBarCode(BillModel bill)
+        private static void SetBarCode(ApplicationDbContext DataAccess, BillModel bill)
         {
-            bill.CompareCodeForCheck = GetBankCode(bill);
+            bill.CompareCodeForCheck = GetBankCode(DataAccess,bill);
             //銀行：
             bill.BankBarCode = GetBankBarCode(bill);
             //超商：
-            string collectionTypeId = GetCollectionTypeId(bill);
+            string collectionTypeId = GetCollectionTypeId(DataAccess,bill);
             bill.MarketBarCode1 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode1(bill, collectionTypeId) : string.Empty;
             bill.MarketBarCode2 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode2(bill) : string.Empty;
             bill.MarketBarCode3 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode3(bill) : string.Empty;
             //郵局：應判斷Channel是否包含郵局類型的通路?
-            bill.PostBarCode1 = bill.PayAmount > 0 ? GetPostBarCode1() : string.Empty;
+            bill.PostBarCode1 = bill.PayAmount > 0 ? GetPostBarCode1(DataAccess) : string.Empty;
             bill.PostBarCode3 = bill.PayAmount > 0 ? GetPostBarCode3(bill) : string.Empty;
             bill.PostBarCode2 = bill.PayAmount > 0 ? GetPostBarCode2(bill) : string.Empty;
         }
@@ -97,7 +128,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private string GetBankCode(BillModel bill)
+        private static string GetBankCode(ApplicationDbContext DataAccess, BillModel bill)
         {
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
             switch (bill.BizCustomer.VirtualAccount1)
@@ -132,7 +163,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private string GetBankBarCode(BillModel bill)
+        private static string GetBankBarCode(BillModel bill)
         {
             switch (bill.BizCustomer.VirtualAccount3)
             {
@@ -153,7 +184,7 @@ namespace SKGPortalCore.Business.BillData
         /// 代收期限(民國年yymmdd)(6碼) + 代收項目 (3碼)
         /// </summary>
         /// <returns></returns>
-        private string GetMarketBarCode1(BillModel bill, string collectionTypeId)
+        private static string GetMarketBarCode1(BillModel bill, string collectionTypeId)
         {
             return bill.PayEndDate.ToROCDate().Substring(1) + collectionTypeId;
         }
@@ -162,7 +193,7 @@ namespace SKGPortalCore.Business.BillData
         /// 銀行條碼(16碼，靠左補零)
         /// </summary>
         /// <returns></returns>
-        private string GetMarketBarCode2(BillModel bill)
+        private static string GetMarketBarCode2(BillModel bill)
         {
             return bill.BankBarCode.PadLeft(16, '0');
         }
@@ -171,7 +202,7 @@ namespace SKGPortalCore.Business.BillData
         /// 應繳年月(4碼) + 檢碼(2) + 應繳金額(9碼，靠左補零)
         /// </summary>
         /// <returns></returns>
-        private string GetMarketBarCode3(BillModel bill)
+        private static string GetMarketBarCode3(BillModel bill)
         {
             return bill.MarketBarCode1.Substring(0, 4)
                 + GetMarketCheckCode(bill.MarketBarCode1, bill.MarketBarCode2, bill.MarketBarCode1.Substring(0, 4), bill.PayAmount.ToInt32())
@@ -181,7 +212,7 @@ namespace SKGPortalCore.Business.BillData
         /// 獲取郵局條碼1
         /// </summary>
         /// <returns></returns>
-        private string GetPostBarCode1()
+        private static string GetPostBarCode1(ApplicationDbContext DataAccess)
         {
             //取郵局通路對應的代收類別代號
             return DataAccess.Set<CollectionTypeDetailModel>().FirstOrDefault(p => p.Channel.ChannelType == CanalisType.Post)?.CollectionTypeId;
@@ -190,7 +221,7 @@ namespace SKGPortalCore.Business.BillData
         /// 獲取郵局條碼2
         /// </summary>
         /// <returns></returns>
-        private string GetPostBarCode2(BillModel bill)
+        private static string GetPostBarCode2(BillModel bill)
         {
             string tmpPostBarCode2 = bill.PayEndDate.ToROCDate() + bill.BankBarCode.PadLeft(16, '0');
             tmpPostBarCode2 += GetPostCheckCode(bill.PostBarCode1, tmpPostBarCode2, bill.PostBarCode3);
@@ -200,7 +231,7 @@ namespace SKGPortalCore.Business.BillData
         /// 獲取郵局條碼3
         /// </summary>
         /// <returns></returns>
-        private string GetPostBarCode3(BillModel bill)
+        private static string GetPostBarCode3(BillModel bill)
         {
             return bill.PayAmount.ToInt32().ToString().PadLeft(8, '0');
         }
@@ -209,7 +240,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private bool CheckBankCodeExist(BillModel bill)
+        private static bool CheckBankCodeExist(ApplicationDbContext DataAccess, BillModel bill)
         {
             BillModel result = DataAccess.Set<BillModel>().FirstOrDefault(p =>
              p.BillNo != bill.BillNo
@@ -222,7 +253,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bankcode"></param>
         /// <returns></returns>
-        private string GetBankCheckCodeSeq(string bankcode)
+        private static string GetBankCheckCodeSeq(string bankcode)
         {
             int tv = 0;
             //扣除檢碼長度，故-1
@@ -268,7 +299,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bankcode"></param>
         /// <returns></returns>
-        private string GetBankCheckCodeSeqAmount(string bankcode, int amount)
+        private static string GetBankCheckCodeSeqAmount(string bankcode, int amount)
         {
             int tv = 0;
             //扣除檢碼長度，故-1
@@ -313,7 +344,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="barDetailDate"></param>
         /// <param name="amount"></param>
         /// <returns></returns>
-        private string GetMarketCheckCode(string barcode1, string payNo, string barDetailDate, int amount)
+        private static string GetMarketCheckCode(string barcode1, string payNo, string barDetailDate, int amount)
         {
             string bar1 = barcode1, bar2 = payNo.PadLeft(16, '0'), bar3 = barDetailDate + amount.ToString().PadLeft(9, '0'), result = string.Empty;
             int cal1 = 0, cal2 = 0;
@@ -340,7 +371,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="cal1"></param>
         /// <param name="cal2"></param>
         /// <param name="bar"></param>
-        private void GetMarketEncode(ref int cal1, ref int cal2, string bar)
+        private static void GetMarketEncode(ref int cal1, ref int cal2, string bar)
         {
             int len = bar.Length;
             for (int i = 0; i < len; i++)
@@ -360,7 +391,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="idx"></param>
         /// <returns></returns>
-        private int MarketEncode(string idx)
+        private static int MarketEncode(string idx)
         {
             return int.Parse(str2.Substring(str1.IndexOf(idx), 1));
         }
@@ -372,7 +403,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="tmp"></param>
         /// <param name="postBarCode3"></param>
         /// <returns></returns>
-        private char GetPostCheckCode(string postBarCode1, string tmpPostBarCode2, string postBarCode3)
+        private static char GetPostCheckCode(string postBarCode1, string tmpPostBarCode2, string postBarCode3)
         {
             int tv = (GetSingleNum(postBarCode1) + GetSingleNum(tmpPostBarCode2) + GetSingleNum(postBarCode3)) % 11;
             return tv.ToString().Length == 2 ? '0' : tv.ToString()[0];
@@ -382,7 +413,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        private int GetSingleNum(string code)
+        private static int GetSingleNum(string code)
         {
             int result = 0;
             for (int i = 0; i < code.Length; i += 2)
@@ -399,13 +430,12 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="hasPayAmount"></param>
         /// <param name="receiptBillCount"></param>
         /// <returns></returns>
-        public PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
+        public static PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
         {
             if (hasPayAmount == 0m)
             {
                 return PayStatus.Unpaid;
             }
-
             if (payAmount > hasPayAmount)
             {
                 return PayStatus.UnderPaid;
@@ -424,7 +454,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private string GetCollectionTypeId(BillModel bill)
+        private static string GetCollectionTypeId(ApplicationDbContext DataAccess, BillModel bill)
         {
             List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
             List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();

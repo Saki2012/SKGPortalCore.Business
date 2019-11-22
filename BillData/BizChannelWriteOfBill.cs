@@ -9,21 +9,19 @@ namespace SKGPortalCore.Business.BillData
     /// <summary>
     /// 通路帳款核銷單-商業邏輯
     /// </summary>
-    public class BizChannelWriteOfBill : BizBase
+    public static class BizChannelWriteOfBill 
     {
-        #region Construct
-        public BizChannelWriteOfBill(MessageLog message) : base(message) { }
-        #endregion
+
 
         #region Public
-        public void CheckData(ChannelWriteOfBillSet set)
+        public static void CheckData(ChannelWriteOfBillSet set)
         {
             if (CompareData(set.ChannelWriteOfDetail, set.CashFlowWriteOfDetail) != 0m) {/*核銷金額不一致，請確認！*/ }
         }
         #endregion
 
         #region Private
-        private decimal CompareData(List<ChannelWriteOfDetailModel> channelWriteOfDetail, List<CashFlowWriteOfDetailModel> cashFlowWriteOfDetail)
+        private static decimal CompareData(List<ChannelWriteOfDetailModel> channelWriteOfDetail, List<CashFlowWriteOfDetailModel> cashFlowWriteOfDetail)
         {
             decimal val = 0m;
             RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel> rc = new RecComparison<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel>(channelWriteOfDetail, cashFlowWriteOfDetail);

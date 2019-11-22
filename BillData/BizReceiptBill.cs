@@ -12,21 +12,17 @@ namespace SKGPortalCore.Business.BillData
     /// <summary>
     /// 收款單-商業邏輯
     /// </summary>
-    public class BizReceiptBill : BizBase
+    public static class BizReceiptBill
     {
-        #region Construct
-        public BizReceiptBill(MessageLog message, ApplicationDbContext dataAccess) : base(message, dataAccess) { }
-        #endregion
-
         #region Public
         /// <summary>
         /// 設置欄位值
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public void SetData(ReceiptBillSet set, ChannelVerifyPeriodModel periodModel, FuncAction action)
+        public static void SetData(ApplicationDbContext DataAccess, ReceiptBillSet set, ChannelVerifyPeriodModel periodModel, FuncAction action)
         {
-            set.ReceiptBill.ToBillNo = GetBillNo(set.ReceiptBill.CompareCodeForCheck);
+            set.ReceiptBill.ToBillNo = GetBillNo(DataAccess,set.ReceiptBill.CompareCodeForCheck);
             if (action == FuncAction.Create)//未來若有修改RemitDate的情況，需進行差異調整
                 set.ReceiptBill.RemitDate = GetRemitDate(periodModel, set.ReceiptBill);
         }
@@ -37,7 +33,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="compareCodeForCheck"></param>
         /// <param name="chargePayType"></param>
         /// <param name="channelFee"></param>
-        public void SetData(ReceiptBillSet set, List<BizCustomerFeeDetailModel> bizCustFee, string compareCodeForCheck, ChargePayType chargePayType, decimal channelFee)
+        public static void SetData(ReceiptBillSet set, List<BizCustomerFeeDetailModel> bizCustFee, string compareCodeForCheck, ChargePayType chargePayType, decimal channelFee)
         {
             GetBizCustFee(bizCustFee, channelFee, chargePayType, CanalisType.Bank, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee);
             set.ReceiptBill.BankFee = bankFee;
@@ -54,7 +50,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="model"></param>
         /// <param name="periodModel"></param>
         /// <returns></returns>
-        public DateTime GetRemitDate(ChannelVerifyPeriodModel periodModel, ReceiptBillModel model)
+        public static DateTime GetRemitDate(ChannelVerifyPeriodModel periodModel, ReceiptBillModel model)
         {
             switch (periodModel?.PayPeriodType)
             {
@@ -77,7 +73,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public ChannelEAccountBillSet CreateChannelEAccountBill(ReceiptBillModel model)
+        public static ChannelEAccountBillSet CreateChannelEAccountBill(ReceiptBillModel model)
         {
             return new ChannelEAccountBillSet()
             {
@@ -102,7 +98,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <returns></returns>
-        public string GetBillNo(string compareCodeForCheck)
+        public static string GetBillNo(ApplicationDbContext DataAccess, string compareCodeForCheck)
         {
             string bill = DataAccess.Set<BillModel>().Where(p => p.CompareCodeForCheck == compareCodeForCheck &&
              (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).FirstOrDefault();
@@ -134,7 +130,7 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Private
-        private protected void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
+        private  static void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
             if (!LibData.HasData(detail)) return;
@@ -178,7 +174,7 @@ namespace SKGPortalCore.Business.BillData
         /// 獲取月結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetMonthlyTime()
+        private static DateTime GetMonthlyTime()
         {
             return DateTime.MinValue;
         }
@@ -187,40 +183,36 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        private DateTime GetTenDayTime(int i)
+        private static DateTime GetTenDayTime(int i)
         {
-            switch (i)
+            return i switch
             {
-                case 1:
-                    return GetEarlyMonthTime();
-                case 2:
-                    return GetMidMonthTime();
-                case 3:
-                    return GetLateMonthTime();
-                default:
-                    return DateTime.MinValue;
-            }
+                1 => GetEarlyMonthTime(),
+                2 => GetMidMonthTime(),
+                3 => GetLateMonthTime(),
+                _ => DateTime.MinValue,
+            };
         }
         /// <summary>
         /// 獲取上旬結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetEarlyMonthTime() { return DateTime.MinValue; }
+        private static DateTime GetEarlyMonthTime() { return DateTime.MinValue; }
         /// <summary>
         /// 獲取中旬結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetMidMonthTime() { return DateTime.MinValue; }
+        private static DateTime GetMidMonthTime() { return DateTime.MinValue; }
         /// <summary>
         /// 獲取下旬結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetLateMonthTime() { return DateTime.MinValue; }
+        private static DateTime GetLateMonthTime() { return DateTime.MinValue; }
         /// <summary>
         /// 獲取週結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetWeekTime(DateTime transDate)
+        private static DateTime GetWeekTime(DateTime transDate)
         {
             if (transDate.DayOfWeek != DayOfWeek.Sunday)
             {
@@ -236,7 +228,7 @@ namespace SKGPortalCore.Business.BillData
         /// 獲取一般日結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private DateTime GetDayTime()
+        private static DateTime GetDayTime()
         {
             return DateTime.MinValue;
         }
@@ -245,7 +237,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="channelId"></param>
         /// <returns></returns>
-        private DateTime GetMarketTime(string channelId)
+        private static DateTime GetMarketTime(string channelId)
         {
             switch (channelId)
             {
@@ -282,7 +274,7 @@ namespace SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private DateTime GetMarketTime_711_Family()
+        private static DateTime GetMarketTime_711_Family()
         {
             return DateTime.Now;
         }
@@ -308,7 +300,7 @@ namespace SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private DateTime GetMarketTime_OK()
+        private static DateTime GetMarketTime_OK()
         {
             return DateTime.Now;
         }
@@ -334,7 +326,7 @@ namespace SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private DateTime GetMarketTime_Hilife()
+        private static DateTime GetMarketTime_Hilife()
         {
             return DateTime.Now;
 

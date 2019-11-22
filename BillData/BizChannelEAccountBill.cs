@@ -3,11 +3,8 @@ using SKGPortalCore.Model.BillData;
 
 namespace SKGPortalCore.Business.BillData
 {
-    public class BizChannelEAccountBill : BizBase
+    public static class BizChannelEAccountBill 
     {
-        #region Construct
-        public BizChannelEAccountBill(MessageLog message) : base(message) { }
-        #endregion
 
         #region Public
         /// <summary>
@@ -15,7 +12,7 @@ namespace SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public void SetData(ChannelEAccountBillSet set)
+        public static void SetData(ChannelEAccountBillSet set)
         {
             int count = 0;
             decimal payAmount = 0, fee = 0;
