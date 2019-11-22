@@ -2,15 +2,15 @@
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.MasterData;
 
-namespace SKGPortalCore.Business.MasterData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
-    public static class BizPayer
+    internal static class BizPayer
     {
         #region Public
         //保存前
         public static void CheckData(MessageLog Message, PayerSet set)
         {
-            CheckPayerNo( Message, set.Payer);
+            CheckPayerNo(Message, set.Payer);
         }
         #endregion
 

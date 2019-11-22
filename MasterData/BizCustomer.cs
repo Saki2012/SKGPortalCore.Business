@@ -1,9 +1,6 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Model.MasterData.OperateSystem;
-
-namespace SKGPortalCore.Business.MasterData
+﻿namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
-    public static class BizCustomer 
+    internal static class BizCustomer
     {
 
     }

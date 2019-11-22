@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 
-namespace SKGPortalCore.Business.BillData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     /// <summary>
     /// 通路帳款核銷單-商業邏輯
     /// </summary>
-    public static class BizChannelWriteOfBill 
+     internal static class BizChannelWriteOfBill
     {
 
 

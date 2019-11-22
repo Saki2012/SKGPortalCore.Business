@@ -7,12 +7,12 @@ using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 
-namespace SKGPortalCore.Business.BillData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     /// <summary>
     /// 收款單-商業邏輯
     /// </summary>
-    public static class BizReceiptBill
+     internal static class BizReceiptBill
     {
         #region Public
         /// <summary>
@@ -22,7 +22,7 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="action"></param>
         public static void SetData(ApplicationDbContext DataAccess, ReceiptBillSet set, ChannelVerifyPeriodModel periodModel, FuncAction action)
         {
-            set.ReceiptBill.ToBillNo = GetBillNo(DataAccess,set.ReceiptBill.CompareCodeForCheck);
+            set.ReceiptBill.ToBillNo = GetBillNo(DataAccess, set.ReceiptBill.CompareCodeForCheck);
             if (action == FuncAction.Create)//未來若有修改RemitDate的情況，需進行差異調整
                 set.ReceiptBill.RemitDate = GetRemitDate(periodModel, set.ReceiptBill);
         }
@@ -130,10 +130,10 @@ namespace SKGPortalCore.Business.BillData
         #endregion
 
         #region Private
-        private  static void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
+        private static void GetBizCustFee(List<BizCustomerFeeDetailModel> detail, decimal channelFee, ChargePayType chargePayType, CanalisType canalisType, out decimal bankFee, out decimal thirdFee, out decimal hiTrustFee)
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
-            if (!LibData.HasData(detail)) return;
+            if (!detail.HasData()) return;
             BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == canalisType && p.FeeType == FeeType.HitrustFee);
             hiTrustFee = null == model ? 0 : model.Fee;
             model = detail.FirstOrDefault(p => p.ChannelType == canalisType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
@@ -152,13 +152,13 @@ namespace SKGPortalCore.Business.BillData
                             {
                                 case ChargePayType.Deduction:
                                     {
-                                        thirdFee = BizReceiptBill.FeeDeduct(model.Fee, channelFee, model.Percent);
+                                        thirdFee = FeeDeduct(model.Fee, channelFee, model.Percent);
                                         bankFee = model.Fee - thirdFee;
                                     }
                                     break;
                                 case ChargePayType.Increase:
                                     {
-                                        thirdFee = BizReceiptBill.FeePlus(model.Fee, model.Percent);
+                                        thirdFee = FeePlus(model.Fee, model.Percent);
                                         bankFee = model.Fee - thirdFee;
                                     }
                                     break;

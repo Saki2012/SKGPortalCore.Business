@@ -5,19 +5,19 @@ using OfficeOpenXml;
 using OfficeOpenXml.Table;
 using pdftron.PDF;
 using pdftron.SDF;
-using SKGPortalCore.Business.Report;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.MasterData.OperateSystem;
-namespace SKGPortalCore.Business.BillData
+using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
+
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     /// <summary>
     /// 帳單-商業邏輯
     /// </summary>
-    public static class BizBill
+    internal static class BizBill
     {
         #region Const
         private const string str1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ+%-. $/1234567890";
@@ -55,10 +55,10 @@ namespace SKGPortalCore.Business.BillData
         /// 檢查資料
         /// </summary>
         /// <param name="set"></param>
-        public static void CheckData(BillSet set ,MessageLog Message,ApplicationDbContext DataAccess)
+        public static void CheckData(BillSet set, MessageLog Message, ApplicationDbContext DataAccess)
         {
             if (set.Bill.BizCustomer?.VirtualAccountLen != set.Bill.BankBarCode?.Length) { Message.AddErrorMessage(MessageCode.Code1007, set.Bill.BizCustomer.VirtualAccountLen, set.Bill.BankBarCode.Length); }
-            if (CheckBankCodeExist(DataAccess,set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
+            if (CheckBankCodeExist(DataAccess, set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.CompareCodeForCheck); }
         }
 
         public static void ExportExcel(List<BillModel> bills)
@@ -110,11 +110,11 @@ namespace SKGPortalCore.Business.BillData
         /// <param name="bill"></param>
         private static void SetBarCode(ApplicationDbContext DataAccess, BillModel bill)
         {
-            bill.CompareCodeForCheck = GetBankCode(DataAccess,bill);
+            bill.CompareCodeForCheck = GetBankCode(DataAccess, bill);
             //銀行：
             bill.BankBarCode = GetBankBarCode(bill);
             //超商：
-            string collectionTypeId = GetCollectionTypeId(DataAccess,bill);
+            string collectionTypeId = GetCollectionTypeId(DataAccess, bill);
             bill.MarketBarCode1 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode1(bill, collectionTypeId) : string.Empty;
             bill.MarketBarCode2 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode2(bill) : string.Empty;
             bill.MarketBarCode3 = !collectionTypeId.IsNullOrEmpty() ? GetMarketBarCode3(bill) : string.Empty;

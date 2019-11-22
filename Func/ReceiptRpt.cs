@@ -3,9 +3,9 @@ using pdftron.PDF;
 using pdftron.SDF;
 using Convert = pdftron.PDF.Convert;
 
-namespace SKGPortalCore.Business.Report
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
-    public class ReceiptRpt
+    internal class ReceiptRpt
     {
 
         private readonly Dictionary<string, string> Dic = new Dictionary<string, string>()
@@ -28,7 +28,7 @@ namespace SKGPortalCore.Business.Report
             pdfdoc.Save($"{ReportTemplate.TemplateOutputPath}{ReportTemplate.ReceiptTemplate}{ReportTemplate.Resx}.pdf", SDFDoc.SaveOptions.e_linearized);
         }
 
-        public void SetData() 
+        public void SetData()
         {
             Dic["RealAccountName"] = string.Empty;
         }

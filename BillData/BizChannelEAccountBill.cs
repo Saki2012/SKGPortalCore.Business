@@ -1,9 +1,8 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Model.BillData;
+﻿using SKGPortalCore.Model.BillData;
 
-namespace SKGPortalCore.Business.BillData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
-    public static class BizChannelEAccountBill 
+    internal static class BizChannelEAccountBill
     {
 
         #region Public

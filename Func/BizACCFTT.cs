@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
 
-namespace SKGPortalCore.Business.Func
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
-    public  static class BizACCFTT
+    internal static class BizACCFTT
     {
         #region Public
         /// <summary>

@@ -1,6 +1,6 @@
-﻿namespace SKGPortalCore.Business.Report
+﻿namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
-    public class ReportTemplate
+    internal class ReportTemplate
     {
         /// <summary>
         /// 模板位置

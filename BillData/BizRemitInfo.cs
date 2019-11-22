@@ -1,12 +1,11 @@
 ﻿using System;
-using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.SourceData;
 
-namespace SKGPortalCore.Business.BillData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
-    public static class BizRemitInfo 
+    internal static class BizRemitInfo
     {
         #region Public
         public static CashFlowBillSet GetCashFlowBillSet(RemitInfoModel model)

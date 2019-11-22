@@ -8,17 +8,17 @@ using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.SourceData;
 
-namespace SKGPortalCore.Business.BillData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     public interface IBizReceiptInfoBill<T> where T : IImportSource
     {
         public void CheckData(T model);
     }
-    public class BizReceiptInfoBill:IDisposable
+    public class BizReceiptInfoBill : IDisposable
     {
         protected MessageLog Message;
         protected ApplicationDbContext DataAccess;
-        public BizReceiptInfoBill(MessageLog message, ApplicationDbContext dataAccess) { Message = message;DataAccess = dataAccess; }
+        public BizReceiptInfoBill(MessageLog message, ApplicationDbContext dataAccess) { Message = message; DataAccess = dataAccess; }
 
         #region IDisposable Support
         private bool disposedValue = false; // 偵測多餘的呼叫

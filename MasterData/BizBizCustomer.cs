@@ -1,12 +1,10 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Lib;
 using SKGPortalCore.Model;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.MasterData.OperateSystem;
 
-namespace SKGPortalCore.Business.MasterData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
-    public static class BizBizCustomer
+    internal static class BizBizCustomer
     {
         #region Public
         public static void CheckData(BizCustomerSet set)

@@ -1,15 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SKGPortalCore.Data;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.MasterData.OperateSystem;
 
-namespace SKGPortalCore.Business.MasterData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
     /// <summary>
     /// 代收類別-商業邏輯
     /// </summary>
-    public static class BizCollectionType 
+    internal static class BizCollectionType
     {
         #region Public
         public static void CheckData(CollectionTypeSet set)

@@ -4,9 +4,9 @@ using System.Net;
 using System.Text;
 using SKGPortalCore.Model.MasterData;
 
-namespace SKGPortalCore.Business.MasterData
+namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
-    public class BizWorkDate
+    internal class BizWorkDate
     {
         /// <summary>
         /// 同步政府行政機關辦公日曆表
