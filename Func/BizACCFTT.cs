@@ -77,7 +77,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Market,
+                    ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.ClearFee,
                     Fee = accftt.ACTFEE.ToDecimal(),
                     Percent = 0m
@@ -91,7 +91,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Post,
+                    ChannelType = ChannelGroupType.Post,
                     FeeType = FeeType.ClearFee,
                     Fee = accftt.ACTFEEPT.ToDecimal(),
                     Percent = 0m,
@@ -110,8 +110,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.HiTrust,
-                    FeeType = FeeType.HitrustFee,
+                    //ChannelType = ChannelGroupType.HiTrust,
+                    FeeType = FeeType.IntroducerFee,
                     Fee = accftt.HIFARE.ToDecimal(),
                     Percent = 0m,
                 });
@@ -124,7 +124,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Bank,
+                    ChannelType = ChannelGroupType.Bank,
                     FeeType = FeeType.TotalFee,
                     Fee = accftt.ACTFEEBEFT.ToDecimal(),
                     Percent = accftt.SHAREBEFTPERCENT.ToDecimal(),
@@ -138,7 +138,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Market,
+                    ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.TotalFee,
                     Fee = accftt.ACTFEEMART.ToDecimal(),
                     Percent = accftt.ACTPERCENT.ToDecimal(),
@@ -152,7 +152,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Post,
+                    ChannelType = ChannelGroupType.Post,
                     FeeType = FeeType.TotalFee,
                     Fee = accftt.ACTFEEPOST.ToDecimal(),
                     Percent = accftt.POSTPERCENT.ToDecimal(),
@@ -166,7 +166,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowId = ++rowId,
                     RowState = RowState.Insert,
-                    ChannelType = CanalisType.Farm,
+                    ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.ClearFee,
                     Fee = accftt.AGRIFEE.ToDecimal(),
                     Percent = 0,
@@ -437,34 +437,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         private static VirtualAccount3 GetVirtualAccount3(ACCFTT accftt)
         {
             if (accftt.CHKNUMFLAG == "0" || accftt.CHKNUMFLAG == "N")
-            {
                 return VirtualAccount3.NoverifyCode;
-            }
             else
-            {
                 if (accftt.CHKAMTFLAG == "Y")
-                {
                     if (accftt.DUETERM == "1")
-                    {
                         return VirtualAccount3.SeqAmountPayEndDate;
-                    }
                     else
-                    {
                         return VirtualAccount3.SeqAmount;
-                    }
-                }
                 else
-                {
                     if (accftt.DUETERM == "1")
-                    {
                         return VirtualAccount3.SeqPayEndDate;
-                    }
                     else
-                    {
                         return VirtualAccount3.Seq;
-                    }
-                }
-            }
         }
         #endregion
     }

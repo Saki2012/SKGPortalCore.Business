@@ -10,8 +10,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     /// </summary>
      internal static class BizChannelWriteOfBill
     {
-
-
         #region Public
         public static void CheckData(ChannelWriteOfBillSet set)
         {
