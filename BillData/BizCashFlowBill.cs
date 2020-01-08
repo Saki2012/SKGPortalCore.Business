@@ -10,9 +10,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     internal static class BizCashFlowBill
     {
         #region Public
-
         public static void CreateChannelWriteOfBill() { }
-
         #endregion
     }
 }

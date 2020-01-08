@@ -31,14 +31,14 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="set"></param>
         public static void CheckData(BillSet set, MessageLog Message, ApplicationDbContext DataAccess)
         {
-            if (CheckBankCodeExist(DataAccess, set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, set.Bill.BankBarCode); }
+            if (CheckBankCodeExist(DataAccess, set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.Bill.BankBarCode), set.Bill.BankBarCode); }
         }
         /// <summary>
         /// 設置資料
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(BillSet set,  ApplicationDbContext DataAccess)
+        public static void SetData(BillSet set, ApplicationDbContext DataAccess)
         {
             set.Bill.PayAmount = 0m;
             if (set.BillDetail.HasData())
