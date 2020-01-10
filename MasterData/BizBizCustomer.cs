@@ -8,7 +8,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
     internal static class BizBizCustomer
     {
         #region Public
-        public static void CheckData(MessageLog message, BizCustomerSet set)
+        public static void CheckData(SysMessageLog message, BizCustomerSet set)
         {
             CheckVirtualAccountLength(message, set.BizCustomer);
             foreach (BizCustomerFeeDetailModel bizCustFeeDetail in set.BizCustomerFeeDetail)
@@ -28,7 +28,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="message"></param>
         /// <param name="bizCustomer"></param>
-        private static void CheckVirtualAccountLength(MessageLog message, BizCustomerModel bizCustomer)
+        private static void CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer)
         {
             int len = bizCustomer.CustomerCode.Length;
             if (bizCustomer.VirtualAccount1 != VirtualAccount1.Empty) len += bizCustomer.Customer.BillTermLen;

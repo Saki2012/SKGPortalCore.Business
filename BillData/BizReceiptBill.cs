@@ -23,7 +23,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="message"></param>
-        public static void CheckData(ReceiptBillSet set, MessageLog message)
+        public static void CheckData(ReceiptBillSet set, SysMessageLog message)
         {
 
 

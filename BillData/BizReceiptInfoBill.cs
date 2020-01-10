@@ -12,7 +12,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     public static class BizReceiptInfoBillBANK
     {
-        public static void CheckData(ReceiptInfoBillBankModel model, MessageLog Message)
+        public static void CheckData(ReceiptInfoBillBankModel model, SysMessageLog Message)
         {
             if (model.RealAccount.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
             else if (!model.RealAccount.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }

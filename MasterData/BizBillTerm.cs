@@ -11,7 +11,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// 檢查欄位
         /// </summary>
         /// <param name="set"></param>
-        public static void CheckData(ApplicationDbContext dataAccess, MessageLog Message, BillTermSet set)
+        public static void CheckData(ApplicationDbContext dataAccess, SysMessageLog Message, BillTermSet set)
         {
             if (!CheckTermNoLen(set.BillTerm)) { Message.AddErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.Customer.BillTermLen); }
             if (CheckTermNoExist(dataAccess, set.BillTerm)) { Message.AddErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BillTermNo); }

@@ -8,7 +8,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
     {
         #region Public
         //保存前
-        public static void CheckData(MessageLog Message, PayerSet set)
+        public static void CheckData(SysMessageLog Message, PayerSet set)
         {
             CheckPayerNo(Message, set.Payer);
         }
@@ -19,7 +19,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// 檢查「繳款人編號」
         /// </summary>
         /// <param name="payer"></param>
-        private static void CheckPayerNo(MessageLog Message, PayerModel payer)
+        private static void CheckPayerNo(SysMessageLog Message, PayerModel payer)
         {
             if (payer.PayerNo.Length != payer.Customer.PayerNoLen)
             {

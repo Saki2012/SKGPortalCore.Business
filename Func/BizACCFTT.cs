@@ -231,7 +231,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
                         if (accftt.RSTORE2 == "1")
                         {
-                            channels.Add(ChannelValue.MartFML);
+                            channels.Add(ChannelValue.MartFamily);
                         }
 
                         if (accftt.RSTORE3 == "1")
@@ -264,7 +264,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
                         if (accftt.RSTORE2 == "1")
                         {
-                            channels.Add(ChannelValue.MartFML);
+                            channels.Add(ChannelValue.MartFamily);
                         }
 
                         if (accftt.RSTORE3 == "1")
@@ -297,7 +297,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
                         if (accftt.RSTORE2 == "1")
                         {
-                            channels.Add(ChannelValue.MartFML);
+                            channels.Add(ChannelValue.MartFamily);
                         }
 
                         if (accftt.RSTORE3 == "1")
@@ -321,7 +321,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
                         if (accftt.RSTORE2 == "1")
                         {
-                            channels.Add(ChannelValue.MartFML);
+                            channels.Add(ChannelValue.MartFamily);
                         }
 
                         if (accftt.RSTORE3 == "1")
@@ -354,7 +354,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
                         if (accftt.RSTORE2 == "1")
                         {
-                            channels.Add(ChannelValue.MartFML);
+                            channels.Add(ChannelValue.MartFamily);
                         }
 
                         if (accftt.RSTORE3 == "1")

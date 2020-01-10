@@ -29,7 +29,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// 檢查資料
         /// </summary>
         /// <param name="set"></param>
-        public static void CheckData(BillSet set, MessageLog Message, ApplicationDbContext DataAccess)
+        public static void CheckData(BillSet set, SysMessageLog Message, ApplicationDbContext DataAccess)
         {
             if (CheckBankCodeExist(DataAccess, set.Bill)) { Message.AddErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.Bill.BankBarCode), set.Bill.BankBarCode); }
         }
