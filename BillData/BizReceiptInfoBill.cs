@@ -14,20 +14,20 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     {
         public static void CheckData(ReceiptInfoBillBankModel model, SysMessageLog Message)
         {
-            if (model.RealAccount.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
-            else if (!model.RealAccount.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }
+            if (model.RealAccount.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
+            else if (!model.RealAccount.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }
             string tradedate = $"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}";
-            if (!DateTime.TryParse(tradedate, out _)) { Message.AddErrorMessage(MessageCode.Code1011, model.Id, ResxManage.GetDescription(model.TradeDate)); }
+            if (!DateTime.TryParse(tradedate, out _)) { Message.AddCustErrorMessage(MessageCode.Code1011, model.Id, ResxManage.GetDescription(model.TradeDate)); }
             //if (model.CompareCode.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.CompareCode)); }
             //else if (!model.CompareCode.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.CompareCode), model.CompareCode); }
-            if (model.PN.CompareTo("+") != 0 && model.PN.CompareTo("-") != 0) { Message.AddErrorMessage(MessageCode.Code1012, model.Id); }
-            if (model.Amount.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Amount)); }
-            else if (!model.Amount.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Amount), model.Amount); }
-            if (model.TradeChannel.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.TradeChannel)); }
-            if (model.Channel.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Channel)); }
-            if (model.CustomerCode.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.CustomerCode)); }
-            if (model.Fee.IsNullOrEmpty()) { Message.AddErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Fee)); }
-            else if (!model.Fee.IsNumberString()) { Message.AddErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Fee), model.Fee); }
+            if (model.PN.CompareTo("+") != 0 && model.PN.CompareTo("-") != 0) { Message.AddCustErrorMessage(MessageCode.Code1012, model.Id); }
+            if (model.Amount.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Amount)); }
+            else if (!model.Amount.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Amount), model.Amount); }
+            if (model.TradeChannel.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.TradeChannel)); }
+            if (model.Channel.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Channel)); }
+            if (model.CustomerCode.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.CustomerCode)); }
+            if (model.Fee.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Fee)); }
+            else if (!model.Fee.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Fee), model.Fee); }
         }
         public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillBankModel model)
         {

@@ -242,7 +242,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetBillNo(ApplicationDbContext DataAccess, string bankBarCode)
         {
-            string bill = DataAccess.Set<BillModel>().Where(p => p.BankBarCode == bankBarCode &&
+            string bill = DataAccess.Set<BillModel>().Where(p => p.VirtualAccountCode == bankBarCode &&
              (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).FirstOrDefault();
             return bill;
         }
@@ -321,7 +321,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (null == colSet) return;
             chargePayType = colSet.CollectionType.ChargePayType;
             CollectionTypeDetailModel c = colSet.CollectionTypeDetail.FirstOrDefault(p => p.CollectionTypeId == collectionTypeId && p.ChannelId == channelId && p.SRange <= amount && p.ERange >= amount);
-            if (null != c) channelFee = c.Fee;
+            if (null != c) channelFee = c.ChannelFee;
         }
         /// <summary>
         /// 獲取預計匯款

@@ -13,9 +13,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="set"></param>
         public static void CheckData(ApplicationDbContext dataAccess, SysMessageLog Message, BillTermSet set)
         {
-            if (!CheckTermNoLen(set.BillTerm)) { Message.AddErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.Customer.BillTermLen); }
-            if (CheckTermNoExist(dataAccess, set.BillTerm)) { Message.AddErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BillTermNo); }
-            if (!CheckTermNo(set.BillTerm)) { Message.AddErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.BillTerm)); }
+            if (!CheckTermNoLen(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.Customer.BillTermLen); }
+            if (CheckTermNoExist(dataAccess, set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BillTermNo); }
+            if (!CheckTermNo(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.BillTerm)); }
         }
         #endregion
 

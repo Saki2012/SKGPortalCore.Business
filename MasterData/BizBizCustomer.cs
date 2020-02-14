@@ -35,7 +35,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.Customer.PayerNoLen;
             if (bizCustomer.VirtualAccount3.In(VirtualAccount3.SeqPayEndDate, VirtualAccount3.SeqAmountPayEndDate)) len += 4;
             if (bizCustomer.VirtualAccount3 != VirtualAccount3.NoverifyCode) len += 1;
-            if (bizCustomer.VirtualAccountLen != len) { message.AddErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }
+            if (bizCustomer.VirtualAccountLen != len) { message.AddCustErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }
         }
         #endregion
     }
