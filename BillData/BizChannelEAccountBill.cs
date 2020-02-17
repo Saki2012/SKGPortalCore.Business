@@ -1,4 +1,5 @@
 ﻿using SKGPortalCore.Model.BillData;
+using SKGPortalCore.Model.Enum;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
@@ -18,7 +19,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             foreach (ChannelEAccountBillDetailModel s in set.ChannelEAccountBillDetail)
             {
                 payAmount += s.ReceiptBill.PayAmount;
-                channelFee += s.ReceiptBill.ChargePayType == Model.ChargePayType.Deduction ? s.ReceiptBill.ChannelFee : 0m;
+                channelFee += s.ReceiptBill.ChargePayType == ChargePayType.Deduction ? s.ReceiptBill.ChannelFee : 0m;
                 count++;
             }
             set.ChannelEAccountBill.Amount = payAmount;
