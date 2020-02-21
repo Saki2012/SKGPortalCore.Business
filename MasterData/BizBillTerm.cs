@@ -13,7 +13,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="set"></param>
         public static void CheckData(ApplicationDbContext dataAccess, SysMessageLog Message, BillTermSet set)
         {
-            if (!CheckTermNoLen(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.Customer.BillTermLen); }
+            if (!CheckTermNoLen(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.BillTermLen); }
             if (CheckTermNoExist(dataAccess, set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BillTermNo); }
             if (!CheckTermNo(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.BillTerm)); }
         }
@@ -27,7 +27,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static bool CheckTermNoLen(BillTermModel billTerm)
         {
-            return billTerm.BizCustomer.Customer.BillTermLen == billTerm.BillTermNo.Length;
+            return billTerm.BizCustomer.BillTermLen == billTerm.BillTermNo.Length;
         }
         /// <summary>
         /// 檢查期別編號是否重複

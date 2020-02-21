@@ -34,16 +34,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="set"></param>
         /// <param name="action"></param>
         public static void SetData(ReceiptBillSet set, ApplicationDbContext dataAccess, IUserModel user, FuncAction action,
-            Dictionary<string, BizCustomerSet> bizCustSetDic, Dictionary<string, CollectionTypeSet> colSetDic, Dictionary<string, ChannelVerifyPeriodModel> periodDic)
+            Dictionary<string, BizCustomerSet> bizCustSetDic, Dictionary<string, CollectionTypeSet> colSetDic)
         {
             BizCustomerSet bizCustomerSet = GetBizCustomerSet(bizCustSetDic, dataAccess, set.ReceiptBill.BankBarCode);
             GetCollectionTypeSet(dataAccess, colSetDic, set.ReceiptBill.CollectionTypeId, set.ReceiptBill.ChannelId, set.ReceiptBill.PayAmount, out ChargePayType chargePayType, out decimal channelFee);
-            ChannelVerifyPeriodModel period = GetChannelVerifyPeriod(dataAccess, periodDic, set.ReceiptBill.CollectionTypeId, set.ReceiptBill.ChannelId);
+            //ChannelVerifyPeriodModel period = GetChannelVerifyPeriod(dataAccess, periodDic, set.ReceiptBill.CollectionTypeId, set.ReceiptBill.ChannelId);
 
             set.ReceiptBill.ToBillNo = GetBillNo(dataAccess, set.ReceiptBill.BankBarCode);
             if (action == FuncAction.Create)
             {
-                set.ReceiptBill.ExpectRemitDate = GetRemitDate(period, set.ReceiptBill);
+                set.ReceiptBill.ExpectRemitDate = GetRemitDate(/*period,*/ set.ReceiptBill);
                 InsertBillReceiptDetail(dataAccess, set.ReceiptBill, set.ReceiptBill.ToBillNo);
                 InsertChannelEAccount(dataAccess, user, set);
             }
@@ -192,22 +192,22 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="model"></param>
         /// <param name="periodModel"></param>
         /// <returns></returns>
-        private static DateTime GetRemitDate(ChannelVerifyPeriodModel periodModel, ReceiptBillModel model)
+        private static DateTime GetRemitDate( ReceiptBillModel model)
         {
-            switch (periodModel?.PayPeriodType)
-            {
-                case PayPeriodType.NDay:
-                    if (model.Channel.ChannelGroupType == ChannelGroupType.Market)
-                        return GetMarketTime(model.ChannelId);
-                    else
-                        return GetDayTime();
-                case PayPeriodType.Week:
-                    return GetWeekTime(DateTime.Now);
-                case PayPeriodType.TenDay:
-                    return GetTenDayTime(10);
-                case PayPeriodType.Month:
-                    return GetMonthlyTime();
-            }
+            //switch (periodModel?.PayPeriodType)
+            //{
+            //    case PayPeriodType.NDay:
+            //        if (model.Channel.ChannelGroupType == ChannelGroupType.Market)
+            //            return GetMarketTime(model.ChannelId);
+            //        else
+            //            return GetDayTime();
+            //    case PayPeriodType.Week:
+            //        return GetWeekTime(DateTime.Now);
+            //    case PayPeriodType.TenDay:
+            //        return GetTenDayTime(10);
+            //    case PayPeriodType.Month:
+            //        return GetMonthlyTime();
+            //}
             return DateTime.MinValue;
         }
         /// <summary>
@@ -328,18 +328,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="collectionTypeId"></param>
         /// <param name="channelId"></param>
-        private static ChannelVerifyPeriodModel GetChannelVerifyPeriod(ApplicationDbContext dataAccess, Dictionary<string, ChannelVerifyPeriodModel> periodDic, string collectionTypeId, string channelId)
-        {
-            string pk = $"{collectionTypeId},{channelId}";
-            ChannelVerifyPeriodModel periodModel = null;
-            if (!periodDic.ContainsKey(pk))
-            {
-                periodModel = dataAccess.Set<ChannelVerifyPeriodModel>().FirstOrDefault(p => p.ChannelId == channelId && p.CollectionTypeId == collectionTypeId);
-                periodDic.Add(pk, periodModel);
-            }
-            periodModel = periodDic[pk];
-            return periodModel;
-        }
+        //private static ChannelVerifyPeriodModel GetChannelVerifyPeriod(ApplicationDbContext dataAccess, string collectionTypeId, string channelId)
+        //{
+        //    string pk = $"{collectionTypeId},{channelId}";
+        //    ChannelVerifyPeriodModel periodModel = null;
+        //    if (!periodDic.ContainsKey(pk))
+        //    {
+        //        periodModel = dataAccess.Set<ChannelVerifyPeriodModel>().FirstOrDefault(p => p.ChannelId == channelId && p.CollectionTypeId == collectionTypeId);
+        //        periodDic.Add(pk, periodModel);
+        //    }
+        //    periodModel = periodDic[pk];
+        //    return periodModel;
+        //}
         /// <summary>
         /// 插入帳單收款明細
         /// </summary>

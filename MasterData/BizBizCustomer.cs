@@ -20,6 +20,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             }
 
         }
+
+        public static void SetData(BizCustomerSet set)
+        {
+
+        }
         #endregion
 
         #region Private
@@ -30,9 +35,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="bizCustomer"></param>
         private static void CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer)
         {
+            return;
             int len = bizCustomer.CustomerCode.Length;
-            if (bizCustomer.VirtualAccount1 != VirtualAccount1.Empty) len += bizCustomer.Customer.BillTermLen;
-            if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.Customer.PayerNoLen;
+            if (bizCustomer.VirtualAccount1 != VirtualAccount1.Empty) len += bizCustomer.BillTermLen;
+            if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.PayerNoLen;
             if (bizCustomer.VirtualAccount3.In(VirtualAccount3.SeqPayEndDate, VirtualAccount3.SeqAmountPayEndDate)) len += 4;
             if (bizCustomer.VirtualAccount3 != VirtualAccount3.NoverifyCode) len += 1;
             if (bizCustomer.VirtualAccountLen != len) { message.AddCustErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }

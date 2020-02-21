@@ -46,7 +46,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     PayAmount = model.Amount.ToDecimal(),
                     BankBarCode = model.CompareCode.Trim(),
                     //CompareCodeForCheck = compareCodeForCheck,
-                    TransDataUnusual = TransDataUnusual.Normal,
                     //ChargePayType = chargePayType,
                     //ChannelFee = channelFee,//model.Fee.ToDecimal(),銀行帶過來的通路手續費暫時不管
                     //BankFee = bankFee,
@@ -80,7 +79,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     ExpectRemitDate = model.TradeDate.ROCDateToCEDate(),
                     PayAmount = model.Amount.ToDecimal(),
                     BankBarCode = model.CompareCode,
-                    TransDataUnusual = TransDataUnusual.Normal,
                     //ChargePayType = chargePayType,
                     //ChannelFee = channelFee,//model.Fee.ToDecimal(),銀行帶過來的通路手續費暫時不管
                     //BankFee = bankFee,
@@ -113,7 +111,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     PayAmount = model.Barcode3.ToDecimal(),
                     BankBarCode = model.Barcode2,
                     //CompareCodeForCheck = compareCodeForCheck,
-                    TransDataUnusual = TransDataUnusual.Normal,
                     //ChargePayType = chargePayType,
                     //ChannelFee = channelFee,//model.Fee.ToDecimal(),銀行帶過來的通路手續費暫時不管
                     //BankFee = bankFee,
@@ -146,7 +143,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     PayAmount = model.Barcode3_Amount.ToDecimal(),
                     BankBarCode = model.Barcode3_CompareCode,
                     //CompareCodeForCheck = compareCodeForCheck,
-                    TransDataUnusual = TransDataUnusual.Normal,
                     //ChargePayType = chargePayType,
                     //ChannelFee = channelFee,//model.Fee.ToDecimal(),銀行帶過來的通路手續費暫時不管
                     //BankFee = bankFee,
@@ -180,7 +176,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     ExpectRemitDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3.ToDecimal(),
                     BankBarCode = model.Barcode2,
-                    TransDataUnusual = TransDataUnusual.Normal,
                     //ChargePayType = chargePayType,
                     //ChannelFee = channelFee,//model.Fee.ToDecimal(),銀行帶過來的通路手續費暫時不管
                     //BankFee = bankFee,

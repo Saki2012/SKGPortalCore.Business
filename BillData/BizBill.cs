@@ -159,22 +159,23 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetBankCode(ApplicationDbContext DataAccess, BillModel bill)
         {
+            return string.Empty;
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
             if (null == bill.BizCustomer) return string.Empty;
             switch (bill.BizCustomer.VirtualAccount1)
             {
                 case VirtualAccount1.BillTerm:
-                    vir1 = bill.BillTerm.BillTermNo.PadLeft(bill.BizCustomer.Customer.BillTermLen, '0');
+                    vir1 = bill.BillTerm.BillTermNo.PadLeft(bill.BizCustomer.BillTermLen, '0');
                     break;
             }
             switch (bill.BizCustomer.VirtualAccount2)
             {
                 case VirtualAccount2.PayerNo:
-                    vir2 = bill.Payer.PayerNo.PadLeft(bill.BizCustomer.Customer.PayerNoLen, '0');
+                    vir2 = bill.Payer.PayerNo.PadLeft(bill.BizCustomer.PayerNoLen, '0');
                     break;
                 case VirtualAccount2.Seq:
                     BillTermModel billTerm = DataAccess.Find<BillTermModel>(bill.BillTermId);
-                    vir2 = (++billTerm.Seq).ToString().PadLeft(bill.BizCustomer.Customer.PayerNoLen, '0');
+                    //vir2 = (++billTerm.Seq).ToString().PadLeft(bill.BizCustomer.Customer.PayerNoLen, '0');
                     DataAccess.Update(billTerm);
                     break;
             }
@@ -197,6 +198,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetCollectionTypeId(ApplicationDbContext DataAccess, BillModel bill)
         {
+            return null;
             if (null == bill.BizCustomer) return string.Empty;
             List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
             List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();

@@ -20,6 +20,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         public static void CheckData(CollectionTypeSet set, SysMessageLog message)
         {
             if (CheckIsOverlap(set.CollectionTypeDetail, out string channelName)) { message.AddCustErrorMessage(MessageCode.Code1013, channelName); }
+            if (CheckChannelVerifyPeriod(set.CollectionTypeDetail, set.CollectionTypeVerifyPeriod, out channelName)) { message.AddCustErrorMessage(MessageCode.Code1014, channelName); }
         }
         /// <summary>
         /// 設置資料
@@ -41,12 +42,26 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static bool CheckIsOverlap(List<CollectionTypeDetailModel> detail, out string channelName)
         {
-            CollectionTypeDetailModel dt = detail.Where(p => detail.Where(
-                     q => p.RowId != q.RowId && p.ChannelId == q.ChannelId &&
-                     (p.SRange >= q.SRange && p.SRange <= q.ERange || p.ERange >= q.SRange && p.ERange <= q.ERange)
-                     ).Any()).FirstOrDefault();
-            channelName = string.Empty; channelName = dt?.Channel.ChannelName;
+            List<CollectionTypeDetailModel> dt = detail.Where(p => detail.Where(
+                    q => p.RowId != q.RowId && p.ChannelId == q.ChannelId &&
+                    (p.SRange >= q.SRange && p.SRange <= q.ERange || p.ERange >= q.SRange && p.ERange <= q.ERange)
+                    ).Any()).ToList();
+            channelName = string.Empty; channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName));
             return null == dt;
+        }
+        /// <summary>
+        /// 檢查是否有通路尚未填寫核銷規則
+        /// </summary>
+        /// <returns></returns>
+        private static bool CheckChannelVerifyPeriod(List<CollectionTypeDetailModel> detail, List<CollectionTypeVerifyPeriodModel> period, out string channelName)
+        {
+            channelName = string.Empty;
+            return true;
+            List<string> channelIds = detail.Select(p => p.ChannelId).ToList();
+            List<string> periods = period.Select(p => p.ChannelId).ToList();
+            //channelName = string.Empty; channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName));
+
+            return null == periods;
         }
         #endregion
 
