@@ -70,7 +70,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             bankFee = 0; thirdFee = 0; hiTrustFee = 0;
             if (!detail.HasData()) return;
-            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == channelGroupType && p.FeeType == FeeType.IntroducerFee);
+            BizCustomerFeeDetailModel model = detail.FirstOrDefault(p => p.ChannelType == channelGroupType && p.FeeType == FeeType.HitrustFee);
             hiTrustFee = null == model ? 0 : model.Fee;
             model = detail.FirstOrDefault(p => p.ChannelType == channelGroupType && (p.FeeType == FeeType.ClearFee || p.FeeType == FeeType.TotalFee));
             if (null != model)

@@ -23,10 +23,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
             string custId = accftt.IDCODE.TrimStart('0');
             customerSet.Customer.CustomerId = custId;
             customerSet.Customer.CustomerName = accftt.CUSTNAME;
-            customerSet.Customer.DeptId = accftt.APPBECODE;
+            //customerSet.Customer.DeptId = accftt.APPBECODE;
             //customerSet.Customer.BillTermLen = 3;//默認三碼
             //customerSet.Customer.PayerNoLen = 6;//默認六碼
-            customerSet.Customer.IsSysCust = false;
+            //customerSet.Customer.IsSysCust = false;
             return customerSet;
         }
         /// <summary>
@@ -55,7 +55,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
             bizCustomerSet.BizCustomer.CustomerCode = custCode;
             bizCustomerSet.BizCustomer.AccountDeptId = accftt.BRCODE;
             bizCustomerSet.BizCustomer.RealAccount = accftt.ACCIDNO;
-            bizCustomerSet.BizCustomer.VirtualAccountLen = (10 + custCode.Length).ToByte();
+            //bizCustomerSet.BizCustomer.VirtualAccountLen = (10 + custCode.Length).ToByte();
             bizCustomerSet.BizCustomer.ChannelIds = GetChannel(accftt);
             bizCustomerSet.BizCustomer.CollectionTypeIds = GetCollectionType(accftt);
 #if DEBUG
@@ -64,18 +64,17 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 #endif
             bizCustomerSet.BizCustomer.VirtualAccount3 = GetVirtualAccount3(accftt);
             bizCustomerSet.BizCustomer.AccountStatus = AccountStatus.Unable;
-            bizCustomerSet.BizCustomer.EntrustCustId = accftt.CUSTID;
+            //bizCustomerSet.BizCustomer.EntrustCustId = accftt.CUSTID;
             bizCustomerSet.BizCustomer.ImportBatchNo = accftt.ImportBatchNo;
             bizCustomerSet.BizCustomer.Source = accftt.Src;
 
-            int rowId = bizCustomerSet.BizCustomerFeeDetail.OrderBy(p => -p.RowId).Select(p => p.RowId).FirstOrDefault();
+            //int rowId = bizCustomerSet.BizCustomerFeeDetail.OrderBy(p => -p.RowId).Select(p => p.RowId).FirstOrDefault();
             bizCustomerSet.BizCustomerFeeDetail.ForEach(p => p.RowState = RowState.Delete);
             if (!accftt.ACTFEE.ToInt32().IsNullOrEmpty())
             {
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.ClearFee,
@@ -89,7 +88,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Post,
                     FeeType = FeeType.ClearFee,
@@ -100,7 +98,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
             if (!accftt.HIFLAG.IsNullOrEmpty())
             {
-                bizCustomerSet.BizCustomer.HiTrustFlag = (HiTrustFlag)accftt.HIFLAG.ToByte();
+                //bizCustomerSet.BizCustomer.HiTrustFlag = (HiTrustFlag)accftt.HIFLAG.ToByte();
             }
 
             if (!accftt.HIFARE.IsNullOrEmpty())
@@ -108,10 +106,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     //ChannelType = ChannelGroupType.HiTrust,
-                    FeeType = FeeType.IntroducerFee,
+                    FeeType = FeeType.HitrustFee,
                     Fee = accftt.HIFARE.ToDecimal(),
                     Percent = 0m,
                 });
@@ -122,7 +119,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Bank,
                     FeeType = FeeType.TotalFee,
@@ -136,7 +132,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.TotalFee,
@@ -150,7 +145,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Post,
                     FeeType = FeeType.TotalFee,
@@ -164,7 +158,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 bizCustomerSet.BizCustomerFeeDetail.Add(new BizCustomerFeeDetailModel()
                 {
                     CustomerCode = custCode,
-                    RowId = ++rowId,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Market,
                     FeeType = FeeType.ClearFee,

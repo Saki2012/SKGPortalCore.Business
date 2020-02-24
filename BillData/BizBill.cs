@@ -115,7 +115,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static bool CheckPayEndDate(DateTime payEndDate, BizCustomerModel customer)
         {
-            return payEndDate == DateTime.MinValue && (customer.MarketEnable || customer.PostEnable);
+            return (customer.MarketEnable || customer.PostEnable) && (payEndDate == null || payEndDate == DateTime.MinValue);
         }
         #endregion
 

@@ -13,7 +13,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             CheckVirtualAccountLength(message, set.BizCustomer);
             foreach (BizCustomerFeeDetailModel bizCustFeeDetail in set.BizCustomerFeeDetail)
             {
-                if (!bizCustFeeDetail.FeeType.In(FeeType.ClearFee, FeeType.TotalFee, FeeType.IntroducerFee))
+                if (!bizCustFeeDetail.FeeType.In(FeeType.ClearFee, FeeType.TotalFee, FeeType.HitrustFee))
                 {
                     set.BizCustomerFeeDetail.Remove(bizCustFeeDetail);
                 }
@@ -23,7 +23,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 
         public static void SetData(BizCustomerSet set)
         {
-
+            SetVirtualAccountLen(set.BizCustomer);
         }
         #endregion
 
@@ -41,7 +41,26 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.PayerNoLen;
             if (bizCustomer.VirtualAccount3.In(VirtualAccount3.SeqPayEndDate, VirtualAccount3.SeqAmountPayEndDate)) len += 4;
             if (bizCustomer.VirtualAccount3 != VirtualAccount3.NoverifyCode) len += 1;
-            if (bizCustomer.VirtualAccountLen != len) { message.AddCustErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }
+            //if (bizCustomer.VirtualAccountLen != len) { message.AddCustErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bizCustomerModel"></param>
+        private static void SetVirtualAccountLen(BizCustomerModel bizCustomerModel)
+        {
+            switch (bizCustomerModel.CustomerCode.Length)
+            {
+                case 3:
+                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len14;
+                    break;
+                case 4:
+                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len16;
+                    break;
+                case 6:
+                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len13;
+                    break;
+            }
         }
         #endregion
     }
