@@ -1,6 +1,7 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.MasterData;
+using System.Linq;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
@@ -13,9 +14,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="set"></param>
         public static void CheckData(ApplicationDbContext dataAccess, SysMessageLog Message, BillTermSet set)
         {
-            if (!CheckTermNoLen(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.BillTermLen); }
+            if (CheckTermNoLen(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BizCustomer.BillTermLen); }
             if (CheckTermNoExist(dataAccess, set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.BillTerm.BillTermNo), set.BillTerm.BillTermNo); }
-            if (!CheckTermNo(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.BillTerm)); }
+            if (CheckTermNo(set.BillTerm)) { Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.BillTerm)); }
         }
         #endregion
 
@@ -27,7 +28,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static bool CheckTermNoLen(BillTermModel billTerm)
         {
-            return billTerm.BizCustomer.BillTermLen == billTerm.BillTermNo.Length;
+            return billTerm.BizCustomer.BillTermLen != billTerm.BillTermNo.Length;
         }
         /// <summary>
         /// 檢查期別編號是否重複
@@ -37,7 +38,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static bool CheckTermNoExist(ApplicationDbContext dataAccess, BillTermModel billTerm)
         {
-            return dataAccess.Set<BillTermModel>().Where("BillTermId<>{0} And CustomerCode={1} And BillTermNo={2} And FormStatus In(0,1)", billTerm.BillTermId, billTerm.CustomerCode, billTerm.BillTermNo).Any();
+            return dataAccess.Set<BillTermModel>().Any(p => p.InternalId != billTerm.InternalId && p.CustomerCode == billTerm.CustomerCode && p.BillTermNo == billTerm.BillTermNo);
         }
         /// <summary>
         /// 檢查「期別編號」是否為數字
@@ -45,7 +46,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="payer"></param>
         private static bool CheckTermNo(BillTermModel billTerm)
         {
-            return billTerm.BillTermNo.IsNumberString();
+            return !billTerm.BillTermNo.IsNumberString();
         }
         #endregion
     }

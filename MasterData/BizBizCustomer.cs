@@ -2,6 +2,7 @@
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.Enum;
 using SKGPortalCore.Model.MasterData;
+using System.Linq;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
@@ -10,15 +11,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         #region Public
         public static void CheckData(SysMessageLog message, BizCustomerSet set)
         {
-            CheckVirtualAccountLength(message, set.BizCustomer);
-            foreach (BizCustomerFeeDetailModel bizCustFeeDetail in set.BizCustomerFeeDetail)
-            {
-                if (!bizCustFeeDetail.FeeType.In(FeeType.ClearFee, FeeType.TotalFee, FeeType.HitrustFee))
-                {
-                    set.BizCustomerFeeDetail.Remove(bizCustFeeDetail);
-                }
-            }
-
+            if (!CheckVirtualAccountLength(message, set.BizCustomer, out int len)) { message.AddCustErrorMessage(MessageCode.Code1007, (int)set.BizCustomer.VirtualAccountLen, len); }
+            CheckBizCustType(set);
         }
 
         public static void SetData(BizCustomerSet set)
@@ -33,15 +27,15 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="message"></param>
         /// <param name="bizCustomer"></param>
-        private static void CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer)
+        private static bool CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer, out int len)
         {
-            return;
-            int len = bizCustomer.CustomerCode.Length;
+            len = bizCustomer.CustomerCode.Length;
+            return true;
             if (bizCustomer.VirtualAccount1 != VirtualAccount1.Empty) len += bizCustomer.BillTermLen;
             if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.PayerNoLen;
             if (bizCustomer.VirtualAccount3.In(VirtualAccount3.SeqPayEndDate, VirtualAccount3.SeqAmountPayEndDate)) len += 4;
             if (bizCustomer.VirtualAccount3 != VirtualAccount3.NoverifyCode) len += 1;
-            //if (bizCustomer.VirtualAccountLen != len) { message.AddCustErrorMessage(MessageCode.Code1007, bizCustomer.VirtualAccountLen, len); }
+            return (int)bizCustomer.VirtualAccountLen != len;
         }
         /// <summary>
         /// 
@@ -60,6 +54,21 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
                 case 6:
                     bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len13;
                     break;
+            }
+        }
+        /// <summary>
+        /// 檢查介紹商企業代號是否有選擇
+        /// </summary>
+        /// <param name="set"></param>
+        private static void CheckBizCustType(BizCustomerSet set)
+        {
+            if (set.BizCustomerFeeDetail.Any(p => p.ChannelType == ChannelGroupType.Hitrust))
+            {
+                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust) return;//error
+            }
+            if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.Percent > 0m))
+            {
+                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer) return;//error
             }
         }
         #endregion

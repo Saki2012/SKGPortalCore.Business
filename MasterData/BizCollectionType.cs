@@ -55,13 +55,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static bool CheckChannelVerifyPeriod(List<CollectionTypeDetailModel> detail, List<CollectionTypeVerifyPeriodModel> period, out string channelName)
         {
+            List<string> channelNames = period.Where(p => detail.Where(q => q.ChannelId != p.ChannelId).Any()).Select(p => p.Channel.ChannelName).ToList();
             channelName = string.Empty;
-            return true;
-            List<string> channelIds = detail.Select(p => p.ChannelId).ToList();
-            List<string> periods = period.Select(p => p.ChannelId).ToList();
-            //channelName = string.Empty; channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName));
-
-            return null == periods;
+            channelName = LibData.Merge(",", false, channelNames);
+            return channelNames.HasData();
         }
         #endregion
 
@@ -76,7 +73,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         {
             collectionTypeDetail?.ForEach(row =>
             {
-                row.ChannelTotalFee = row.ChannelFee + row.BankFee + row.BankBackFee;
+                row.ChannelTotalFee = row.ChannelFee + row.ChannelFeedBackFee + row.ChannelRebateFee;
             });
         }
         #endregion

@@ -10,26 +10,28 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         //保存前
         public static void CheckData(SysMessageLog Message, PayerSet set)
         {
-            CheckPayerNo(Message, set.Payer);
+            if (CheckPayerNoLen(set.Payer)) { Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(set.Payer.PayerNo), set.Payer.BizCustomer.PayerNoLen); }
+            if (CheckPayerNoIsNotNum(set.Payer.PayerNo)) { Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(set.Payer.PayerNo)); }
         }
         #endregion
 
         #region Private
         /// <summary>
-        /// 檢查「繳款人編號」
+        /// 檢查「繳款人編號」長度
         /// </summary>
         /// <param name="payer"></param>
-        private static void CheckPayerNo(SysMessageLog Message, PayerModel payer)
+        private static bool CheckPayerNoLen(PayerModel payer)
         {
-            if (payer.PayerNo.Length != payer.Customer.PayerNoLen)
-            {
-                Message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(payer.PayerNo), payer.Customer.PayerNoLen);
-            }
-
-            if (payer.PayerNo.IsNumberString())
-            {
-                Message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(payer.PayerNo));
-            }
+            return payer.PayerNo.Length != payer.BizCustomer.PayerNoLen;
+        }
+        /// <summary>
+        /// 檢查「繳款人編號」是否皆為數字
+        /// </summary>
+        /// <param name="payerNo"></param>
+        /// <returns></returns>
+        private static bool CheckPayerNoIsNotNum(string payerNo)
+        {
+            return !payerNo.IsNumberString();
         }
         #endregion
     }
