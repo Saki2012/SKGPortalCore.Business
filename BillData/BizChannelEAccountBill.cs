@@ -1,11 +1,11 @@
-﻿using SKGPortalCore.Model.BillData;
+﻿using SKGPortalCore.Data;
+using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.Enum;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
     internal static class BizChannelEAccountBill
     {
-
         #region Public
         /// <summary>
         /// 設置欄位
@@ -26,10 +26,27 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             set.ChannelEAccountBill.ExpectRemitAmount = payAmount - channelFee;
             set.ChannelEAccountBill.PayCount = count;
         }
+        /// <summary>
+        /// 過帳資料
+        /// </summary>
+        public static void PostingData(ChannelEAccountBillSet set, ApplicationDbContext dataAccess)
+        {
+            PostingReceiptBill(set, dataAccess);
+        }
         #endregion
 
         #region Private
-
+        /// <summary>
+        /// 過帳收款單
+        /// </summary>
+        private static void PostingReceiptBill(ChannelEAccountBillSet set, ApplicationDbContext dataAccess)
+        {
+            foreach (var c in set.ChannelEAccountBillDetail)
+            {
+                c.ReceiptBill.ChannelEAccountBillNo = set.ChannelEAccountBill.BillNo;
+                dataAccess.Update(c.ReceiptBill);
+            }
+        }
         #endregion
     }
 }

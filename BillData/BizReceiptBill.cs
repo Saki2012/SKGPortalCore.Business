@@ -316,7 +316,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             else
                 return LibData.GetWorkDate(workDic, new DateTime(transDate.AddMonths(1).Year, transDate.AddMonths(1).Month, 5), 0);
         }
-
         /// <summary>
         /// 檢查，並設置異常訊息
         /// </summary>

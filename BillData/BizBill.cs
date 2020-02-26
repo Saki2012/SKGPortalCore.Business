@@ -61,7 +61,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 else return PayStatus.OverPaid;
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bills"></param>
         public static void ExportExcel(List<BillModel> bills)
         {
             using ExcelPackage excel = new ExcelPackage();
@@ -71,6 +74,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             workSheet.Cells[$"A{bills.Count + 2}"].LoadFromCollection(bills, true, TableStyles.Medium12);
             excel.Save();
         }
+        /// <summary>
+        /// 
+        /// </summary>
         public static void ReadExcel()
         {
             using FileStream fs = new FileStream(@"C:\Read.xlsx", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -91,6 +97,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 string cellValue = sheet.Cells[currentRow, 1].Text;//讀取格式化過後的文字(讀取使用者看到的文字)
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="set"></param>
         public static void PrintBill(BillSet set)
         {
             using PDFDoc pdfdoc = new PDFDoc();
