@@ -32,17 +32,23 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(ReceiptBillSet set, ApplicationDbContext dataAccess, IUserModel user, FuncAction action, Dictionary<string, BizCustomerSet> bizCustSetDic, Dictionary<string, CollectionTypeSet> colSetDic)
+        public static void SetData(ReceiptBillSet set, ApplicationDbContext dataAccess, Dictionary<string, BizCustomerSet> bizCustSetDic, Dictionary<string, CollectionTypeSet> colSetDic, Dictionary<DateTime, bool> workDic)
         {
             BizCustomerSet bizCustomerSet = GetBizCustomerSet(dataAccess, bizCustSetDic, set.ReceiptBill.BankBarCode);
             CollectionTypeSet collectionTypeSet = GetCollectionTypeSet(dataAccess, colSetDic, set.ReceiptBill.CollectionTypeId);
             SetBizCustomer(set.ReceiptBill, bizCustomerSet.BizCustomer);
             SetBillNo(dataAccess, set.ReceiptBill);
             SetFee(set.ReceiptBill, bizCustomerSet, collectionTypeSet);
-            SetRemitDate(set.ReceiptBill, collectionTypeSet);
+            SetRemitDate(set.ReceiptBill, collectionTypeSet, workDic);
             SetErrMessage(set.ReceiptBill);
-            PostingBillReceiptDetail(dataAccess, set.ReceiptBill, set.ReceiptBill.ToBillNo);
-            PostingChannelEAccount(dataAccess, user, set);
+        }
+        /// <summary>
+        /// 過帳資料
+        /// </summary>
+        public static void PostingData(ApplicationDbContext dataAccess, IUserModel user, FuncAction action, ReceiptBillSet oldData, ReceiptBillSet newData)
+        {
+            PostingBillReceiptDetail(dataAccess, newData.ReceiptBill, newData.ReceiptBill.ToBillNo);
+            PostingChannelEAccount(dataAccess, user, newData);
         }
         #endregion
 
@@ -71,7 +77,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 if (null != bizCust) BizCustSetDic.Add(custCode4, bizCust);
                 if (null == bizCust) bizCust = biz.QueryData(new object[] { custCode3 });
                 if (null != bizCust) BizCustSetDic.Add(custCode3, bizCust);
-                if (null == bizCust) return null;
             }
             return bizCust;
         }
@@ -184,26 +189,27 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="model"></param>
         /// <param name="periodModel"></param>
         /// <returns></returns>
-        private static void SetRemitDate(ReceiptBillModel receiptBill, CollectionTypeSet collectionTypeSet)
+        private static void SetRemitDate(ReceiptBillModel receiptBill, CollectionTypeSet collectionTypeSet, Dictionary<DateTime, bool> workDic)
         {
             DateTime expectRemitDate = DateTime.MinValue;
             if (!receiptBill.Channel.ChannelGroupType.In(ChannelGroupType.Bank, ChannelGroupType.Self))
             {
                 CollectionTypeVerifyPeriodModel period = collectionTypeSet.CollectionTypeVerifyPeriod.Where(p => p.ChannelId == receiptBill.ChannelId).FirstOrDefault();
+
                 switch (period?.PayPeriodType)
                 {
-                    case PayPeriodType.NDay_A: GetNDay_A(); break;
-                    case PayPeriodType.NDay_B: GetNDay_B(); break;
-                    case PayPeriodType.NDay_C: GetNDay_C(); break;
-                    case PayPeriodType.Week: GetWeekTime(DateTime.Now); break;
-                    case PayPeriodType.TenDay: GetTenDayTime(1); break;
-                    case PayPeriodType.Month: GetMonthlyTime(); break;
+                    case PayPeriodType.NDay_A: expectRemitDate = GetNDay_A(workDic, receiptBill.TransDate); break;
+                    case PayPeriodType.NDay_B: expectRemitDate = GetNDay_B(workDic, receiptBill.TransDate); break;
+                    case PayPeriodType.NDay_C: expectRemitDate = GetNDay_C(workDic, receiptBill.TransDate); break;
+                    case PayPeriodType.Week:   expectRemitDate = GetWeekTime(workDic, receiptBill.TransDate); break;
+                    case PayPeriodType.TenDay: expectRemitDate = GetTenDayTime(workDic, receiptBill.TransDate); break;
                 }
             }
             receiptBill.ExpectRemitDate = expectRemitDate;
         }
         /// <summary>
-        /// 
+        /// 7-11、全家、郵局、農金、亞太
+        /// 入帳日：入帳日為非營業日時，會與前一個傳輸日一同匯款
         /// Ex:T+3為例 
         /// -------------------------
         /// |資料傳輸日|入帳，撥款日|
@@ -224,12 +230,15 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_A()
+        private static DateTime GetNDay_A(Dictionary<DateTime, bool> workDic, DateTime transDate)
         {
-            return DateTime.Now;
+            DateTime result = transDate.AddDays(3);
+            if (!workDic[result]) result = LibData.GetWorkDate(workDic, result, -1);
+            return result;
         }
         /// <summary>
-        /// 
+        /// OK
+        /// 入帳日：入帳日為非營業日時，往後遞延下一個營業日
         /// Ex:T+3為例
         /// -------------------------
         /// |資料傳輸日|入帳，撥款日|
@@ -250,12 +259,15 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_B()
+        private static DateTime GetNDay_B(Dictionary<DateTime, bool> workDic, DateTime transDate)
         {
-            return DateTime.Now;
+            return LibData.GetWorkDate(workDic, transDate.AddDays(3), 0);
         }
         /// <summary>
-        /// 
+        /// 萊爾富
+        /// 入帳日：
+        /// 1. 傳輸日為非營業日時，金流會併在後一個營業日的入帳日一起匯款
+        /// 2. 入帳日為非營業日時，往後遞延下一個營業日
         /// Ex:T+3為例 
         /// -------------------------
         /// |資料傳輸日|入帳，撥款日|
@@ -270,70 +282,41 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// |星期五　　|星期三　　　|
         /// -------------------------
-        /// |星期六　　|(下週)星期一|
+        /// |星期六　　|(下週)星期四|
         /// -------------------------
-        /// |星期日　　|(下週)星期一|
+        /// |星期日　　|(下週)星期四|
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_C()
+        private static DateTime GetNDay_C(Dictionary<DateTime, bool> workDic, DateTime transDate)
         {
-            return DateTime.Now;
+            return !workDic[transDate] ?
+                LibData.GetWorkDate(workDic, LibData.GetWorkDate(workDic, transDate, 0).AddDays(3), 0) :
+                LibData.GetWorkDate(workDic, LibData.GetWorkDate(workDic, transDate.AddDays(3), 0), 0);
         }
         /// <summary>
         /// 獲取週結的預計匯款日
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetWeekTime(DateTime transDate)
+        private static DateTime GetWeekTime(Dictionary<DateTime, bool> workDic, DateTime transDate)
         {
-            if (transDate.DayOfWeek != DayOfWeek.Sunday)
-            {
-
-            }
-            else
-            {
-
-            }
-            return DateTime.MinValue;
+            return LibData.GetWorkDate(workDic, transDate.AddDays((transDate.DayOfWeek != DayOfWeek.Sunday ? 7 : 0) + DayOfWeek.Wednesday - transDate.DayOfWeek), 0); ;
         }
         /// <summary>
         /// 獲取旬結的預計匯款日
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        private static DateTime GetTenDayTime(int i)
+        private static DateTime GetTenDayTime(Dictionary<DateTime, bool> workDic, DateTime transDate)
         {
-            return i switch
-            {
-                1 => GetEarlyMonthTime(),
-                2 => GetMidMonthTime(),
-                3 => GetLateMonthTime(),
-                _ => DateTime.MinValue,
-            };
+            if (transDate.Day < 11)
+                return LibData.GetWorkDate(workDic, new DateTime(transDate.Year, transDate.Month, 15), 0);
+            else if (transDate.Day < 21)
+                return LibData.GetWorkDate(workDic, new DateTime(transDate.Year, transDate.Month, 25), 0);
+            else
+                return LibData.GetWorkDate(workDic, new DateTime(transDate.AddMonths(1).Year, transDate.AddMonths(1).Month, 5), 0);
         }
-        /// <summary>
-        /// 獲取上旬結的預計匯款日
-        /// </summary>
-        /// <returns></returns>
-        private static DateTime GetEarlyMonthTime() { return DateTime.MinValue; }
-        /// <summary>
-        /// 獲取中旬結的預計匯款日
-        /// </summary>
-        /// <returns></returns>
-        private static DateTime GetMidMonthTime() { return DateTime.MinValue; }
-        /// <summary>
-        /// 獲取下旬結的預計匯款日
-        /// </summary>
-        /// <returns></returns>
-        private static DateTime GetLateMonthTime() { return DateTime.MinValue; }
-        /// <summary>
-        /// 獲取月結的預計匯款日
-        /// </summary>
-        /// <returns></returns>
-        private static DateTime GetMonthlyTime()
-        {
-            return DateTime.MinValue;
-        }
+
         /// <summary>
         /// 檢查，並設置異常訊息
         /// </summary>

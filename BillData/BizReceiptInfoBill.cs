@@ -118,6 +118,5 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             };
             return result;
         }
-
     }
 }

@@ -159,7 +159,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetBankCode(ApplicationDbContext DataAccess, BillModel bill)
         {
-            return string.Empty;
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
             if (null == bill.BizCustomer) return string.Empty;
             switch (bill.BizCustomer.VirtualAccount1)
@@ -174,9 +173,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     vir2 = bill.Payer.PayerNo.PadLeft(bill.BizCustomer.PayerNoLen, '0');
                     break;
                 case VirtualAccount2.Seq:
-                    BillTermModel billTerm = DataAccess.Find<BillTermModel>(bill.BillTermId);
-                    //vir2 = (++billTerm.Seq).ToString().PadLeft(bill.BizCustomer.Customer.PayerNoLen, '0');
-                    DataAccess.Update(billTerm);
                     break;
             }
             switch (bill.BizCustomer.VirtualAccount3)
@@ -198,7 +194,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetCollectionTypeId(ApplicationDbContext DataAccess, BillModel bill)
         {
-            return null;
             if (null == bill.BizCustomer) return string.Empty;
             List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
             List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();

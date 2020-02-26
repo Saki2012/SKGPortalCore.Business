@@ -23,7 +23,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
                 .DeserializeObject<HolidayOpenData>(srcString);
             foreach (WorkDateModel holiday in jsonData.result.records)
             {
-                Console.WriteLine($"Date: {holiday.Date}, IsHoliday: {holiday.IsHoliday}, Category: {holiday.HolidayCategory}");
+                Console.WriteLine($"Date: {holiday.Date}, IsHoliday: {holiday.IsWorkDate}, Category: {holiday.HolidayCategory}");
             }
             return jsonData.result.records;
         }
