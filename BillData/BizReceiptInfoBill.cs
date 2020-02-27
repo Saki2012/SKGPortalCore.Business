@@ -4,7 +4,6 @@ using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.Enum;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.SourceData;
 
@@ -106,7 +105,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = model.ISC,
+                    CollectionTypeId = model.CollectionType,
                     TransDate = model.TransDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
                     ExpectRemitDate = model.PayDate.ToDateTime(),

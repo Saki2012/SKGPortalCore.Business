@@ -1,6 +1,6 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.Enum;
+using SKGPortalCore.Model.System;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {

@@ -1,6 +1,6 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
-using SKGPortalCore.Model.Enum;
+using SKGPortalCore.Model.System;
 using SKGPortalCore.Model.SystemTable;
 using System;
 using System.Collections.Generic;
@@ -81,7 +81,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         }
         /// <summary>
         /// 獲取超商條碼2
-        /// 虛擬帳號(16碼，靠左補零)
+        /// 虛擬帳號(16碼，右靠左補零)
         /// </summary>
         /// <param name="virtualAccountCode">虛擬帳號</param>
         /// <returns>超商條碼2</returns>

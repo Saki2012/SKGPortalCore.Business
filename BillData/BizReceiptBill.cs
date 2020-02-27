@@ -4,9 +4,9 @@ using System.Linq;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.Enum;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
+using SKGPortalCore.Model.System;
 using SKGPortalCore.Repository.BillData;
 using SKGPortalCore.Repository.MasterData;
 
@@ -201,7 +201,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     case PayPeriodType.NDay_A: expectRemitDate = GetNDay_A(workDic, receiptBill.TransDate); break;
                     case PayPeriodType.NDay_B: expectRemitDate = GetNDay_B(workDic, receiptBill.TransDate); break;
                     case PayPeriodType.NDay_C: expectRemitDate = GetNDay_C(workDic, receiptBill.TransDate); break;
-                    case PayPeriodType.Week:   expectRemitDate = GetWeekTime(workDic, receiptBill.TransDate); break;
+                    case PayPeriodType.Week: expectRemitDate = GetWeekTime(workDic, receiptBill.TransDate); break;
                     case PayPeriodType.TenDay: expectRemitDate = GetTenDayTime(workDic, receiptBill.TransDate); break;
                 }
             }
@@ -230,10 +230,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_A(Dictionary<DateTime, bool> workDic, DateTime transDate)
+        private static DateTime GetNDay_A(Dictionary<DateTime, bool> workDic, DateTime transDate, int days = 3)
         {
-            DateTime result = transDate.AddDays(3);
-            if (!workDic[result]) result = LibData.GetWorkDate(workDic, result, -1);
+            DateTime result = transDate.AddDays(days);
+            if (!workDic[result]) result = LibData.GetWorkDate(workDic, result, 0, false);
             return result;
         }
         /// <summary>
@@ -259,9 +259,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_B(Dictionary<DateTime, bool> workDic, DateTime transDate)
+        private static DateTime GetNDay_B(Dictionary<DateTime, bool> workDic, DateTime transDate, int days = 3)
         {
-            return LibData.GetWorkDate(workDic, transDate.AddDays(3), 0);
+            return LibData.GetWorkDate(workDic, transDate.AddDays(days), 0);
         }
         /// <summary>
         /// 萊爾富
@@ -288,19 +288,28 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// -------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetNDay_C(Dictionary<DateTime, bool> workDic, DateTime transDate)
+        private static DateTime GetNDay_C(Dictionary<DateTime, bool> workDic, DateTime transDate, int days = 3)
         {
-            return !workDic[transDate] ?
-                LibData.GetWorkDate(workDic, LibData.GetWorkDate(workDic, transDate, 0).AddDays(3), 0) :
-                LibData.GetWorkDate(workDic, LibData.GetWorkDate(workDic, transDate.AddDays(3), 0), 0);
+            DateTime result = !workDic[transDate] ? LibData.GetWorkDate(workDic, transDate, 0) : transDate;
+            return LibData.GetWorkDate(workDic, result, days);
         }
         /// <summary>
         /// 獲取週結的預計匯款日
+        /// Ex:週三結帳
+        /// -------------------------------------------
+        /// ｜               2020/02                  ｜          
+        /// -------------------------------------------
+        /// ｜日　｜一　｜二　｜三　｜四　｜五　｜六　｜
+        /// -------------------------------------------
+        /// ｜　　｜１７｜１８｜１９｜２０｜２１｜２２｜
+        /// -------------------------------------------
+        /// ｜２３｜　　｜　　｜匯款｜　　｜　　｜　　｜
+        /// -------------------------------------------
         /// </summary>
         /// <returns></returns>
-        private static DateTime GetWeekTime(Dictionary<DateTime, bool> workDic, DateTime transDate)
+        private static DateTime GetWeekTime(Dictionary<DateTime, bool> workDic, DateTime transDate, DayOfWeek dayOfWeek = DayOfWeek.Wednesday)
         {
-            return LibData.GetWorkDate(workDic, transDate.AddDays((transDate.DayOfWeek != DayOfWeek.Sunday ? 7 : 0) + DayOfWeek.Wednesday - transDate.DayOfWeek), 0); ;
+            return LibData.GetWorkDate(workDic, transDate.AddDays((transDate.DayOfWeek != DayOfWeek.Sunday ? 7 : 0) + dayOfWeek - transDate.DayOfWeek), 0); ;
         }
         /// <summary>
         /// 獲取旬結的預計匯款日

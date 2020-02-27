@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SKGPortalCore.Lib;
-using SKGPortalCore.Model.Enum;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
+using SKGPortalCore.Model.System;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
