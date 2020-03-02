@@ -14,6 +14,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         //銀行
         public static void CheckData(ReceiptInfoBillBankModel model, SysMessageLog Message)
         {
+            return;
             if (model.RealAccount.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
             else if (!model.RealAccount.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }
             string tradedate = $"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}";
@@ -40,7 +41,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     TradeDate = tradeDate,
                     ExpectRemitDate = tradeDate,
                     PayAmount = model.Amount.ToDecimal(),
-                    BankBarCode = model.CompareCode.Trim(),
+                    BankBarCode = model.CompareCode,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }
@@ -51,9 +52,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static void CheckData(ReceiptInfoBillPostModel model)
         {
         }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, ApplicationDbContext DataAccess)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, ApplicationDbContext dataAccess)
         {
-            List<ChannelMapModel> ChannelMap = DataAccess.Set<ChannelMapModel>().ToList();
+            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
@@ -75,14 +76,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static void CheckData(ReceiptInfoBillMarketModel model)
         {
         }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketModel model)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketModel model, ApplicationDbContext dataAccess)
         {
+            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType,
+                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
                     TransDate = model.PayDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
                     ExpectRemitDate = model.PayDate.ToDateTime(),
@@ -98,19 +101,21 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static void CheckData(ReceiptInfoBillMarketSPIModel model)
         {
         }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketSPIModel model)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketSPIModel model, ApplicationDbContext dataAccess)
         {
+            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType,
+                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
                     TransDate = model.TransDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
                     ExpectRemitDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3_Amount.ToDecimal(),
-                    BankBarCode = model.Barcode3_CompareCode,
+                    BankBarCode = model.Barcode2,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }

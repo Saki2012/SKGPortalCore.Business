@@ -48,7 +48,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static void PostingData(ApplicationDbContext dataAccess, IUserModel user, FuncAction action, ReceiptBillSet oldData, ReceiptBillSet newData)
         {
             PostingBillReceiptDetail(dataAccess, newData.ReceiptBill, newData.ReceiptBill.ToBillNo);
-            PostingChannelEAccount(dataAccess, user, newData);
+            //PostingChannelEAccount(dataAccess, user, newData);
         }
         #endregion
 
@@ -61,6 +61,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static BizCustomerSet GetBizCustomerSet(ApplicationDbContext dataAccess, Dictionary<string, BizCustomerSet> BizCustSetDic, string compareCode)
         {
+            compareCode = compareCode.TrimStart('0');
+
             BizCustomerSet bizCust = null;
             string custCode6 = compareCode.Substring(0, 6),
                    custCode4 = compareCode.Substring(0, 4),
@@ -71,12 +73,21 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (null == bizCust)
             {
                 using BizCustomerRepository biz = new BizCustomerRepository(dataAccess);
-                bizCust = biz.QueryData(new object[] { custCode6 });
-                if (null != bizCust) BizCustSetDic.Add(custCode6, bizCust);
-                if (null == bizCust) bizCust = biz.QueryData(new object[] { custCode4 });
-                if (null != bizCust) BizCustSetDic.Add(custCode4, bizCust);
-                if (null == bizCust) bizCust = biz.QueryData(new object[] { custCode3 });
-                if (null != bizCust) BizCustSetDic.Add(custCode3, bizCust);
+                if (null == bizCust)
+                {
+                    bizCust = biz.QueryData(new object[] { custCode6 });
+                    if (null != bizCust) BizCustSetDic.Add(custCode6, bizCust);
+                }
+                if (null == bizCust)
+                {
+                    bizCust = biz.QueryData(new object[] { custCode4 });
+                    if (null != bizCust) BizCustSetDic.Add(custCode4, bizCust);
+                }
+                if (null == bizCust)
+                {
+                    bizCust = biz.QueryData(new object[] { custCode3 });
+                    if (null != bizCust) BizCustSetDic.Add(custCode3, bizCust);
+                }
             }
             return bizCust;
         }

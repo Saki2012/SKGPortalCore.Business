@@ -117,7 +117,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
             string importBatchNo = $"MARKET{now.ToString("yyyyMMddhhmmss")}";
             foreach (int line in sources.Keys)
             {
-                if (LibData.ByteSubString(sources[line], 9, 8) == "I0O")
+                if (LibData.ByteSubString(sources[line], 9, 3) == "I0O")
                     result.Add(new ReceiptInfoBillMarketSPIModel() { Id = line, Source = sources[line], ImportBatchNo = importBatchNo });
                 else
                     result.Add(new ReceiptInfoBillMarketModel() { Id = line, Source = sources[line], ImportBatchNo = importBatchNo });
@@ -138,12 +138,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
                 if (model is ReceiptInfoBillMarketModel)
                 {
                     BizReceiptInfo.CheckData(model);
-                    repo.Create(BizReceiptInfo.GetReceiptBillSet(model));
+                    repo.Create(BizReceiptInfo.GetReceiptBillSet(model, DataAccess));
                 }
                 else if (model is ReceiptInfoBillMarketSPIModel)
                 {
                     BizReceiptInfo.CheckData(model);
-                    repo.Create(BizReceiptInfo.GetReceiptBillSet(model));
+                    repo.Create(BizReceiptInfo.GetReceiptBillSet(model, DataAccess));
                 }
             });
             repo.CommitData(FuncAction.Create);

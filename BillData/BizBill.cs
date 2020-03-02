@@ -40,7 +40,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             SetBillDetail(DataAccess, set.Bill, set.BillDetail);
             SetBillReceiptDetail(DataAccess, set.Bill, set.BillReceiptDetail);
 
-            set.Bill.VirtualAccountCode = GetBankCode(DataAccess, set.Bill);
+            SetBankCode(DataAccess, set.Bill);
             set.Bill.CollectionTypeId = GetCollectionTypeId(DataAccess, set.Bill);
             if (!(set.Bill.BizCustomer.MarketEnable || set.Bill.BizCustomer.PostEnable)) set.Bill.PayEndDate = DateTime.MinValue;
         }
@@ -167,10 +167,14 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private static string GetBankCode(ApplicationDbContext DataAccess, BillModel bill)
+        private static void SetBankCode(ApplicationDbContext DataAccess, BillModel bill)
         {
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
-            if (null == bill.BizCustomer) return string.Empty;
+            if (null == bill.BizCustomer)
+            {
+                bill.VirtualAccountCode = string.Empty;
+                return;
+            }
             switch (bill.BizCustomer.VirtualAccount1)
             {
                 case VirtualAccount1.BillTerm:
@@ -194,7 +198,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     break;
             }
             string result = $"{bill.CustomerCode}{vir3}{vir1}{vir2}";
-            return $"{result}{BizVirtualAccountCode.GetVirtualCheckCode(bill.BizCustomer.VirtualAccount3, result, bill.PayAmount)}";
+            bill.VirtualAccountCode = $"{result}{BizVirtualAccountCode.GetVirtualCheckCode(bill.BizCustomer.VirtualAccount3, result, bill.PayAmount)}".PadLeft(16, '0');
         }
         /// <summary>
         /// 獲取帳單對應的超商代收類別
@@ -204,11 +208,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static string GetCollectionTypeId(ApplicationDbContext DataAccess, BillModel bill)
         {
+            return null;
             if (null == bill.BizCustomer) return string.Empty;
             List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
             List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();
             string collectionTypeId = DataAccess.Set<CollectionTypeDetailModel>()
-                .Where(p => coltypes.Contains(p.CollectionTypeId) && channels.Contains(p.ChannelId) && p.SRange >= bill.PayAmount && p.ERange <= bill.PayAmount)
+                .Where(p => coltypes.Contains(p.CollectionTypeId) && channels.Contains(p.ChannelId) && p.SRange >= bill.PayAmount && p.ERange <= bill.PayAmount)?
                 .Select(p => p.CollectionTypeId).FirstOrDefault();
             return collectionTypeId;
         }
