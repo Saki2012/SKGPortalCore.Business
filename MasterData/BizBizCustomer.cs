@@ -11,13 +11,24 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         #region Public
         public static void CheckData(SysMessageLog message, BizCustomerSet set)
         {
-            if (!CheckVirtualAccountLength(message, set.BizCustomer, out int len)) { message.AddCustErrorMessage(MessageCode.Code1007, (int)set.BizCustomer.VirtualAccountLen, len); }
-            CheckBizCustType(set);
+            CheckVirtualAccountLength(message, set.BizCustomer);
+            CheckBizCustType(message, set);
         }
-
+        /// <summary>
+        /// 設置資料
+        /// </summary>
+        /// <param name="set"></param>
         public static void SetData(BizCustomerSet set)
         {
-            SetVirtualAccountLen(set.BizCustomer);
+            bool marketEnable = false, postEnable = false;
+            set.BizCustomerFeeDetail.ForEach(row =>
+            {
+                if (row.ChannelType == ChannelGroupType.Market) marketEnable = true;
+                if (row.ChannelType == ChannelGroupType.Post) postEnable = true;
+                ResetRowPercent(row);
+            });
+            set.BizCustomer.MarketEnable = marketEnable;
+            set.BizCustomer.PostEnable = postEnable;
         }
         #endregion
 
@@ -27,49 +38,40 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="message"></param>
         /// <param name="bizCustomer"></param>
-        private static bool CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer, out int len)
+        private static void CheckVirtualAccountLength(SysMessageLog message, BizCustomerModel bizCustomer)
         {
-            len = bizCustomer.CustomerCode.Length;
-            return true;
+            int len = bizCustomer.CustomerCode.Length;
             if (bizCustomer.VirtualAccount1 != VirtualAccount1.Empty) len += bizCustomer.BillTermLen;
             if (bizCustomer.VirtualAccount2 != VirtualAccount2.Empty) len += bizCustomer.PayerNoLen;
             if (bizCustomer.VirtualAccount3.In(VirtualAccount3.SeqPayEndDate, VirtualAccount3.SeqAmountPayEndDate)) len += 4;
             if (bizCustomer.VirtualAccount3 != VirtualAccount3.NoverifyCode) len += 1;
-            return (int)bizCustomer.VirtualAccountLen != len;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bizCustomerModel"></param>
-        private static void SetVirtualAccountLen(BizCustomerModel bizCustomerModel)
-        {
-            switch (bizCustomerModel.CustomerCode.Length)
-            {
-                case 3:
-                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len14;
-                    break;
-                case 4:
-                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len16;
-                    break;
-                case 6:
-                    bizCustomerModel.VirtualAccountLen = VirtualAccountLen.Len13;
-                    break;
-            }
+            if ((int)bizCustomer.VirtualAccountLen != len)
+                message.AddCustErrorMessage(MessageCode.Code1007, (int)bizCustomer.VirtualAccountLen, len);
         }
         /// <summary>
         /// 檢查介紹商企業代號是否有選擇
         /// </summary>
         /// <param name="set"></param>
-        private static void CheckBizCustType(BizCustomerSet set)
+        private static void CheckBizCustType(SysMessageLog message, BizCustomerSet set)
         {
             if (set.BizCustomerFeeDetail.Any(p => p.ChannelType == ChannelGroupType.Hitrust))
             {
-                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust) return;//error
+                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust || set.BizCustomer.IntroCustomerCode.IsNullOrEmpty())
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(set.BizCustomer.IntroCustomerCode));
             }
             if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.Percent > 0m))
             {
-                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer) return;//error
+                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer || set.BizCustomer.IntroCustomerCode.IsNullOrEmpty())
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(set.BizCustomer.IntroCustomerCode));
             }
+        }
+        /// <summary>
+        /// 若銀行手續費類型不為每筆總手續費時，分潤%設置為0
+        /// </summary>
+        /// <param name="row"></param>
+        private static void ResetRowPercent(BizCustomerFeeDetailModel row)
+        {
+            if (row.BankFeeType != BankFeeType.TotalFee) row.Percent = 0;
         }
         #endregion
     }

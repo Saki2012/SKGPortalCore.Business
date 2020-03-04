@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
@@ -122,10 +123,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
             List<ReceiptInfoBillPostModel> models = modelSources as List<ReceiptInfoBillPostModel>;
             using BizCustomerRepository bizCustRepo = new BizCustomerRepository(DataAccess) { Message = Message };
             using ReceiptBillRepository repo = new ReceiptBillRepository(DataAccess) { Message = Message, User = SystemOperator.SysOperator };
+            List<ChannelMapModel> channelMap = DataAccess.Set<ChannelMapModel>().ToList();
             foreach (ReceiptInfoBillPostModel model in models)
             {
-                BizReceiptInfo.CheckData(model);
-                repo.Create(BizReceiptInfo.GetReceiptBillSet(model, DataAccess));
+                repo.Create(BizReceiptInfo.GetReceiptBillSet(model, channelMap));
             }
             repo.CommitData(FuncAction.Create);
         }

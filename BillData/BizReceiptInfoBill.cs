@@ -12,21 +12,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     public static class BizReceiptInfo
     {
         //銀行
-        public static void CheckData(ReceiptInfoBillBankModel model, SysMessageLog Message)
-        {
-            return;
-            if (model.RealAccount.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.RealAccount)); }
-            else if (!model.RealAccount.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.RealAccount), model.RealAccount); }
-            string tradedate = $"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}";
-            if (!DateTime.TryParse(tradedate, out _)) { Message.AddCustErrorMessage(MessageCode.Code1011, model.Id, ResxManage.GetDescription(model.TradeDate)); }
-            if (model.PN.CompareTo("+") != 0 && model.PN.CompareTo("-") != 0) { Message.AddCustErrorMessage(MessageCode.Code1012, model.Id); }
-            if (model.Amount.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Amount)); }
-            else if (!model.Amount.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Amount), model.Amount); }
-            if (model.TradeChannel.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.TradeChannel)); }
-            if (model.Channel.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Channel)); }
-            if (model.Fee.IsNullOrEmpty()) { Message.AddCustErrorMessage(MessageCode.Code1010, model.Id, ResxManage.GetDescription(model.Fee)); }
-            else if (!model.Fee.IsNumberString()) { Message.AddCustErrorMessage(MessageCode.Code1009, model.Id, ResxManage.GetDescription(model.Fee), model.Fee); }
-        }
         public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillBankModel model)
         {
             DateTime.TryParse($"{model.TradeDate.ToADDateFormat()} {model.TradeTime.Substring(0, 2)}:{model.TradeTime.Substring(2, 2)}:{model.TradeTime.Substring(4, 2)}", out DateTime tradeDate);
@@ -41,7 +26,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     TradeDate = tradeDate,
                     ExpectRemitDate = tradeDate,
                     PayAmount = model.Amount.ToDecimal(),
-                    BankBarCode = model.CompareCode,
+                    VirtualAccountCode = model.CompareCode,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }
@@ -49,23 +34,19 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             return result;
         }
         //郵局
-        public static void CheckData(ReceiptInfoBillPostModel model)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, List<ChannelMapModel> channelMap)
         {
-        }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillPostModel model, ApplicationDbContext dataAccess)
-        {
-            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType.Trim(),
-                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel)?.ChannelId,
-                    TransDate = model.TradeDate.ROCDateToCEDate(),
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel)?.ChannelId,
+                    TransDate = model.TradeDate.ROCDateToCEDate().AddDays(1),
                     TradeDate = model.TradeDate.ROCDateToCEDate(),
                     PayAmount = model.Amount.ToDecimal(),
-                    BankBarCode = model.CompareCode,
+                    VirtualAccountCode = model.CompareCode,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }
@@ -73,24 +54,19 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             return result;
         }
         //超商
-        public static void CheckData(ReceiptInfoBillMarketModel model)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketModel model, List<ChannelMapModel> channelMap)
         {
-        }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketModel model, ApplicationDbContext dataAccess)
-        {
-            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType,
-                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
-                    TransDate = model.PayDate.ToDateTime(),
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
+                    TransDate = model.AccountingDay.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
-                    ExpectRemitDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3.ToDecimal(),
-                    BankBarCode = model.Barcode2,
+                    VirtualAccountCode = model.Barcode2,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }
@@ -98,24 +74,19 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             return result;
         }
         //超商-產險
-        public static void CheckData(ReceiptInfoBillMarketSPIModel model)
+        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketSPIModel model, List<ChannelMapModel> channelMap)
         {
-        }
-        public static ReceiptBillSet GetReceiptBillSet(ReceiptInfoBillMarketSPIModel model, ApplicationDbContext dataAccess)
-        {
-            List<ChannelMapModel> ChannelMap = dataAccess.Set<ChannelMapModel>().ToList();
             ReceiptBillSet result = new ReceiptBillSet()
             {
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType,
-                    ChannelId = ChannelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
                     TransDate = model.TransDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
-                    ExpectRemitDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3_Amount.ToDecimal(),
-                    BankBarCode = model.Barcode2,
+                    VirtualAccountCode = model.Barcode2,
                     ImportBatchNo = model.ImportBatchNo,
                     Source = model.Source,
                 }

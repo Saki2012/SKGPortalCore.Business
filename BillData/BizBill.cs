@@ -11,6 +11,7 @@ using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.System;
+using SKGPortalCore.Model.SystemTable;
 using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
@@ -25,25 +26,27 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// 檢查資料
         /// </summary>
         /// <param name="set"></param>
-        public static void CheckData(BillSet set, SysMessageLog Message, ApplicationDbContext DataAccess)
+        public static void CheckData(BillSet set, SysMessageLog message, ApplicationDbContext dataAccess)
         {
-            if (BizVirtualAccountCode.CheckBankCodeExist(DataAccess, set.Bill.VirtualAccountCode)) { Message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.Bill.VirtualAccountCode), set.Bill.VirtualAccountCode); }
-            if (CheckPayEndDate(set.Bill.PayEndDate, set.Bill.BizCustomer)) { Message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(set.Bill.PayEndDate)); }
+            if (BizVirtualAccountCode.CheckBankCodeExist(dataAccess, set.Bill.VirtualAccountCode, out _))
+            { message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.Bill.VirtualAccountCode), set.Bill.VirtualAccountCode); }
+            CheckPayEndDate(message, set.Bill);
+            CheckCollectionTypeId(message, dataAccess, set.Bill);
         }
         /// <summary>
         /// 設置資料
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(BillSet set, ApplicationDbContext DataAccess)
+        public static void SetData(BillSet set)
         {
-            SetBillDetail(DataAccess, set.Bill, set.BillDetail);
-            SetBillReceiptDetail(DataAccess, set.Bill, set.BillReceiptDetail);
-
-            SetBankCode(DataAccess, set.Bill);
-            set.Bill.CollectionTypeId = GetCollectionTypeId(DataAccess, set.Bill);
-            if (!(set.Bill.BizCustomer.MarketEnable || set.Bill.BizCustomer.PostEnable)) set.Bill.PayEndDate = DateTime.MinValue;
+            SetBillDetail(set.Bill, set.BillDetail);
+            SetBillReceiptDetail(set.Bill, set.BillReceiptDetail);
+            SetBankCode(set.Bill);
+            ResetPayEndDateAndCollectionType(set.Bill);
         }
+
+
         /// <summary>
         /// 獲取銷帳狀態
         /// </summary>
@@ -61,6 +64,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 else return PayStatus.OverPaid;
             }
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -123,51 +127,45 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="payEndDate"></param>
         /// <param name="customer"></param>
         /// <returns></returns>
-        private static bool CheckPayEndDate(DateTime payEndDate, BizCustomerModel customer)
+        private static void CheckPayEndDate(SysMessageLog message, BillModel bill)
         {
-            return (customer.MarketEnable || customer.PostEnable) && (payEndDate == null || payEndDate == DateTime.MinValue);
+            if ((bill.BizCustomer.MarketEnable || bill.BizCustomer.PostEnable) && (bill.PayEndDate == null || bill.PayEndDate == DateTime.MinValue))
+                message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(bill.PayEndDate));
+        }
+        /// <summary>
+        /// 檢查超商代收項目
+        /// </summary>
+        /// <param name="payEndDate"></param>
+        /// <param name="customer"></param>
+        /// <returns></returns>
+        private static void CheckCollectionTypeId(SysMessageLog message, ApplicationDbContext dataAccess, BillModel bill)
+        {
+            if (bill.BizCustomer.MarketEnable)
+            {
+                if (bill.CollectionTypeId.IsNullOrEmpty())
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(bill.CollectionTypeId));
+                else
+                {
+                    if (!bill.BizCustomer.CollectionTypeIds.Split(',').Contains(bill.CollectionTypeId))
+                        message.AddCustErrorMessage(MessageCode.Code1015, bill.CollectionTypeId);
+                    else
+                    {
+                        CollectionTypeDetailModel colDet = dataAccess.Set<CollectionTypeDetailModel>().FirstOrDefault(p => p.CollectionTypeId == bill.CollectionTypeId && p.SRange <= bill.PayAmount && p.ERange >= bill.PayAmount);
+                        if (null == colDet)
+                            message.AddCustErrorMessage(MessageCode.Code1016, bill.CollectionTypeId);
+                    }
+                }
+            }
         }
         #endregion
 
-        #region SetDetail
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="DataAccess"></param>
-        /// <param name="Bill"></param>
-        /// <param name="BillDetail"></param>
-        private static void SetBillDetail(ApplicationDbContext DataAccess, BillModel Bill, List<BillDetailModel> BillDetail)
-        {
-            Bill.PayAmount = 0m;
-            BillDetail?.ForEach(row =>
-            {
-                Bill.PayAmount += row.PayAmount;
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="DataAccess"></param>
-        /// <param name="Bill"></param>
-        /// <param name="BillReceiptDetail"></param>
-        private static void SetBillReceiptDetail(ApplicationDbContext DataAccess, BillModel Bill, List<BillReceiptDetailModel> BillReceiptDetail)
-        {
-            Bill.HadPayAmount = 0m;
-            BillReceiptDetail?.ForEach(row =>
-            {
-                Bill.HadPayAmount += row.ReceiptBill.PayAmount;
-            });
-            Bill.PayStatus = GetPayStatus(Bill.PayAmount, Bill.HadPayAmount);
-        }
-        #endregion
-
-        #region GetData
+        #region SetData
         /// <summary>
         /// 獲取銀行銷帳編號
         /// </summary>
         /// <param name="bill"></param>
         /// <returns></returns>
-        private static void SetBankCode(ApplicationDbContext DataAccess, BillModel bill)
+        private static void SetBankCode(BillModel bill)
         {
             string vir1 = string.Empty, vir2 = string.Empty, vir3 = string.Empty;
             if (null == bill.BizCustomer)
@@ -201,21 +199,43 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             bill.VirtualAccountCode = $"{result}{BizVirtualAccountCode.GetVirtualCheckCode(bill.BizCustomer.VirtualAccount3, result, bill.PayAmount)}".PadLeft(16, '0');
         }
         /// <summary>
-        /// 獲取帳單對應的超商代收類別
-        /// todo：Check超商代收類別是否ok
+        /// 若未啟用超商/郵局通路時，重置繳費截止日
+        ///   未啟用超商時，重置代收類別
         /// </summary>
         /// <param name="bill"></param>
-        /// <returns></returns>
-        private static string GetCollectionTypeId(ApplicationDbContext DataAccess, BillModel bill)
+        private static void ResetPayEndDateAndCollectionType(BillModel bill)
         {
-            return null;
-            if (null == bill.BizCustomer) return string.Empty;
-            List<string> coltypes = bill.BizCustomer.CollectionTypeIds.Split(',').ToList();
-            List<string> channels = bill.BizCustomer.ChannelIds.Split(',').ToList();
-            string collectionTypeId = DataAccess.Set<CollectionTypeDetailModel>()
-                .Where(p => coltypes.Contains(p.CollectionTypeId) && channels.Contains(p.ChannelId) && p.SRange >= bill.PayAmount && p.ERange <= bill.PayAmount)?
-                .Select(p => p.CollectionTypeId).FirstOrDefault();
-            return collectionTypeId;
+            if (!(bill.BizCustomer.MarketEnable || bill.BizCustomer.PostEnable)) bill.PayEndDate = DateTime.MinValue;
+            if (!bill.BizCustomer.MarketEnable) bill.CollectionTypeId = null;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DataAccess"></param>
+        /// <param name="Bill"></param>
+        /// <param name="BillDetail"></param>
+        private static void SetBillDetail(BillModel Bill, List<BillDetailModel> BillDetail)
+        {
+            Bill.PayAmount = 0m;
+            BillDetail?.ForEach(row =>
+            {
+                Bill.PayAmount += row.PayAmount;
+            });
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DataAccess"></param>
+        /// <param name="Bill"></param>
+        /// <param name="BillReceiptDetail"></param>
+        private static void SetBillReceiptDetail(BillModel Bill, List<BillReceiptDetailModel> BillReceiptDetail)
+        {
+            Bill.HadPayAmount = 0m;
+            BillReceiptDetail?.ForEach(row =>
+            {
+                Bill.HadPayAmount += row.ReceiptBill.PayAmount;
+            });
+            Bill.PayStatus = GetPayStatus(Bill.PayAmount, Bill.HadPayAmount);
         }
         #endregion
 

@@ -1,5 +1,6 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
+using SKGPortalCore.Model.SourceData;
 using SKGPortalCore.Model.System;
 using SKGPortalCore.Model.SystemTable;
 using System;
@@ -22,13 +23,24 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// <summary>
         /// 檢查銷帳編號是否已存在
         /// </summary>
-        /// <param name="DataAccess"></param>
+        /// <param name="dataAccess"></param>
         /// <param name="virtualAccountCode">虛擬帳號</param>
         /// <returns></returns>
-        public static bool CheckBankCodeExist(ApplicationDbContext DataAccess, string virtualAccountCode)
+        public static bool CheckBankCodeExist(ApplicationDbContext dataAccess, string virtualAccountCode, out VirtualAccountCodeModel virtualAccount)
         {
-            VirtualAccountCodeModel virtualAccount = DataAccess.Set<VirtualAccountCodeModel>().Find(virtualAccountCode);
+            virtualAccount = dataAccess.Set<VirtualAccountCodeModel>().Find(virtualAccountCode);
             return null != virtualAccount;
+        }
+
+        public static void AddVirtualAccountCode(ApplicationDbContext dataAccess, string sourceProgId, string sourceBillNo, string virtualAccountCode)
+        {
+            VirtualAccountCodeModel virtualAccount = new VirtualAccountCodeModel() { SourceProgId = sourceProgId, SourceBillNo = sourceBillNo, VirtualAccountCode = virtualAccountCode, };
+            dataAccess.Set<VirtualAccountCodeModel>().Add(virtualAccount);
+        }
+
+        public static void DelVirtualAccountCode(ApplicationDbContext dataAccess, string virtualAccountCode)
+        {
+            dataAccess.Set<VirtualAccountCodeModel>().Remove(dataAccess.Set<VirtualAccountCodeModel>().Find(virtualAccountCode));
         }
 
         #region 銀行條碼規則
@@ -50,7 +62,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     return string.Empty;
             }
         }
-
         #endregion
 
         #region 超商條碼規則
@@ -109,7 +120,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// 獲取郵局條碼1
         /// </summary>
         /// <returns></returns>
-        public static string GetPostBarCode1 { get { return "50084884"; } }
+        public static string GetPostBarCode1 { get { return ConstParameter.PostCollectionTypeId; } }
         /// <summary>
         /// 獲取郵局條碼2
         /// </summary>

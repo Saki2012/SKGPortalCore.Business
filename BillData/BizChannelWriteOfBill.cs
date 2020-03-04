@@ -33,7 +33,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
               {
                   return result;
               }
-
               return result;
           }));
             rc.Detail.Sort(new Comparison<CashFlowWriteOfDetailModel>((x, y) =>
@@ -47,7 +46,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                {
                    return result;
                }
-
                return result;
            }));
             rc.CompareFunc = new Func<ChannelWriteOfDetailModel, CashFlowWriteOfDetailModel, int>((x, y) =>
@@ -61,7 +59,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                  {
                      return result;
                  }
-
                  return result;
              });
 
@@ -83,9 +80,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 
             return val;
         }
-
-
-
         #endregion
     }
 }

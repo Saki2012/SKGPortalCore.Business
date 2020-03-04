@@ -201,190 +201,191 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// <returns></returns>
         private static string GetChannel(ACCFTT accftt)
         {
-            List<string> channels = new List<string>();
-            switch (accftt.CHANNEL)
-            {
-                case "9":
-                    {
-                        channels.Add(ChannelValue.Cash);
-                        channels.Add(ChannelValue.ATM);
-                        channels.Add(ChannelValue.Remit);
-                        channels.Add(ChannelValue.ACH);
-                        channels.Add(ChannelValue.ACHForPay);
-                        channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1")
-                        {
-                            channels.Add(ChannelValue.Post);
-                        }
+            return string.Empty;
+            //List<string> channels = new List<string>();
+            //switch (accftt.CHANNEL)
+            //{
+            //    case "9":
+            //        {
+            //            channels.Add(ChannelValue.Cash);
+            //            channels.Add(ChannelValue.ATM);
+            //            channels.Add(ChannelValue.Remit);
+            //            channels.Add(ChannelValue.ACH);
+            //            channels.Add(ChannelValue.ACHForPay);
+            //            channels.Add(ChannelValue.CTBC);
+            //            if (accftt.POSTFLAG == "1")
+            //            {
+            //                channels.Add(ChannelValue.Post);
+            //            }
 
-                        if (accftt.RSTORE1 == "1")
-                        {
-                            channels.Add(ChannelValue.Mart711);
-                        }
+            //            if (accftt.RSTORE1 == "1")
+            //            {
+            //                channels.Add(ChannelValue.Mart711);
+            //            }
 
-                        if (accftt.RSTORE2 == "1")
-                        {
-                            channels.Add(ChannelValue.MartFamily);
-                        }
+            //            if (accftt.RSTORE2 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartFamily);
+            //            }
 
-                        if (accftt.RSTORE3 == "1")
-                        {
-                            channels.Add(ChannelValue.MartOK);
-                        }
+            //            if (accftt.RSTORE3 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartOK);
+            //            }
 
-                        if (accftt.RSTORE4 == "1")
-                        {
-                            channels.Add(ChannelValue.MartLIFE);
-                        }
-                    }
-                    break;
-                case "0":
-                    {
-                        channels.Add(ChannelValue.Cash);
-                        channels.Add(ChannelValue.Remit);
-                        channels.Add(ChannelValue.ACH);
-                        channels.Add(ChannelValue.ACHForPay);
-                        channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1")
-                        {
-                            channels.Add(ChannelValue.Post);
-                        }
+            //            if (accftt.RSTORE4 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartLIFE);
+            //            }
+            //        }
+            //        break;
+            //    case "0":
+            //        {
+            //            channels.Add(ChannelValue.Cash);
+            //            channels.Add(ChannelValue.Remit);
+            //            channels.Add(ChannelValue.ACH);
+            //            channels.Add(ChannelValue.ACHForPay);
+            //            channels.Add(ChannelValue.CTBC);
+            //            if (accftt.POSTFLAG == "1")
+            //            {
+            //                channels.Add(ChannelValue.Post);
+            //            }
 
-                        if (accftt.RSTORE1 == "1")
-                        {
-                            channels.Add(ChannelValue.Mart711);
-                        }
+            //            if (accftt.RSTORE1 == "1")
+            //            {
+            //                channels.Add(ChannelValue.Mart711);
+            //            }
 
-                        if (accftt.RSTORE2 == "1")
-                        {
-                            channels.Add(ChannelValue.MartFamily);
-                        }
+            //            if (accftt.RSTORE2 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartFamily);
+            //            }
 
-                        if (accftt.RSTORE3 == "1")
-                        {
-                            channels.Add(ChannelValue.MartOK);
-                        }
+            //            if (accftt.RSTORE3 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartOK);
+            //            }
 
-                        if (accftt.RSTORE4 == "1")
-                        {
-                            channels.Add(ChannelValue.MartLIFE);
-                        }
-                    }
-                    break;
-                case "1":
-                    {
-                        channels.Add(ChannelValue.ATM);
-                        channels.Add(ChannelValue.Remit);
-                        channels.Add(ChannelValue.ACH);
-                        channels.Add(ChannelValue.ACHForPay);
-                        channels.Add(ChannelValue.CTBC);
-                        if (accftt.POSTFLAG == "1")
-                        {
-                            channels.Add(ChannelValue.Post);
-                        }
+            //            if (accftt.RSTORE4 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartLIFE);
+            //            }
+            //        }
+            //        break;
+            //    case "1":
+            //        {
+            //            channels.Add(ChannelValue.ATM);
+            //            channels.Add(ChannelValue.Remit);
+            //            channels.Add(ChannelValue.ACH);
+            //            channels.Add(ChannelValue.ACHForPay);
+            //            channels.Add(ChannelValue.CTBC);
+            //            if (accftt.POSTFLAG == "1")
+            //            {
+            //                channels.Add(ChannelValue.Post);
+            //            }
 
-                        if (accftt.RSTORE1 == "1")
-                        {
-                            channels.Add(ChannelValue.Mart711);
-                        }
+            //            if (accftt.RSTORE1 == "1")
+            //            {
+            //                channels.Add(ChannelValue.Mart711);
+            //            }
 
-                        if (accftt.RSTORE2 == "1")
-                        {
-                            channels.Add(ChannelValue.MartFamily);
-                        }
+            //            if (accftt.RSTORE2 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartFamily);
+            //            }
 
-                        if (accftt.RSTORE3 == "1")
-                        {
-                            channels.Add(ChannelValue.MartOK);
-                        }
+            //            if (accftt.RSTORE3 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartOK);
+            //            }
 
-                        if (accftt.RSTORE4 == "1")
-                        {
-                            channels.Add(ChannelValue.MartLIFE);
-                        }
-                    }
-                    break;
-                case "2":
-                    {
-                        channels.Add(ChannelValue.Cash);
-                        if (accftt.RSTORE1 == "1")
-                        {
-                            channels.Add(ChannelValue.Mart711);
-                        }
+            //            if (accftt.RSTORE4 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartLIFE);
+            //            }
+            //        }
+            //        break;
+            //    case "2":
+            //        {
+            //            channels.Add(ChannelValue.Cash);
+            //            if (accftt.RSTORE1 == "1")
+            //            {
+            //                channels.Add(ChannelValue.Mart711);
+            //            }
 
-                        if (accftt.RSTORE2 == "1")
-                        {
-                            channels.Add(ChannelValue.MartFamily);
-                        }
+            //            if (accftt.RSTORE2 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartFamily);
+            //            }
 
-                        if (accftt.RSTORE3 == "1")
-                        {
-                            channels.Add(ChannelValue.MartOK);
-                        }
+            //            if (accftt.RSTORE3 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartOK);
+            //            }
 
-                        if (accftt.RSTORE4 == "1")
-                        {
-                            channels.Add(ChannelValue.MartLIFE);
-                        }
-                    }
-                    break;
-                case "3":
-                    {
-                        channels.Add(ChannelValue.Remit);
-                    }
-                    break;
-                case "4":
-                    {
-                        if (accftt.POSTFLAG == "1")
-                        {
-                            channels.Add(ChannelValue.Post);
-                        }
+            //            if (accftt.RSTORE4 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartLIFE);
+            //            }
+            //        }
+            //        break;
+            //    case "3":
+            //        {
+            //            channels.Add(ChannelValue.Remit);
+            //        }
+            //        break;
+            //    case "4":
+            //        {
+            //            if (accftt.POSTFLAG == "1")
+            //            {
+            //                channels.Add(ChannelValue.Post);
+            //            }
 
-                        if (accftt.RSTORE1 == "1")
-                        {
-                            channels.Add(ChannelValue.Mart711);
-                        }
+            //            if (accftt.RSTORE1 == "1")
+            //            {
+            //                channels.Add(ChannelValue.Mart711);
+            //            }
 
-                        if (accftt.RSTORE2 == "1")
-                        {
-                            channels.Add(ChannelValue.MartFamily);
-                        }
+            //            if (accftt.RSTORE2 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartFamily);
+            //            }
 
-                        if (accftt.RSTORE3 == "1")
-                        {
-                            channels.Add(ChannelValue.MartOK);
-                        }
+            //            if (accftt.RSTORE3 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartOK);
+            //            }
 
-                        if (accftt.RSTORE4 == "1")
-                        {
-                            channels.Add(ChannelValue.MartLIFE);
-                        }
-                    }
-                    break;
-            }
-            if (accftt.AUTOFLAG == "1")
-            {
-                channels.Add(ChannelValue.Deduct_Server);
-            }
+            //            if (accftt.RSTORE4 == "1")
+            //            {
+            //                channels.Add(ChannelValue.MartLIFE);
+            //            }
+            //        }
+            //        break;
+            //}
+            //if (accftt.AUTOFLAG == "1")
+            //{
+            //    channels.Add(ChannelValue.Deduct_Server);
+            //}
 
-            channels.Add(ChannelValue.Deduct_Client);
-            if (accftt.EBFLAG == "1")
-            {
-                channels.Add(ChannelValue.EB);
-            }
+            //channels.Add(ChannelValue.Deduct_Client);
+            //if (accftt.EBFLAG == "1")
+            //{
+            //    channels.Add(ChannelValue.EB);
+            //}
 
-            if (accftt.CTBCFLAG == "1")
-            {
-                channels.Add(ChannelValue.CTBC);
-            }
+            //if (accftt.CTBCFLAG == "1")
+            //{
+            //    channels.Add(ChannelValue.CTBC);
+            //}
 
-            if (accftt.AGRIFLAG == "1")
-            {
-                channels.Add(ChannelValue.Farm);
-            }
+            //if (accftt.AGRIFLAG == "1")
+            //{
+            //    channels.Add(ChannelValue.Farm);
+            //}
 
-            channels.Sort();
-            return LibData.Merge(",", false, channels.ToArray());
+            //channels.Sort();
+            //return LibData.Merge(",", false, channels.ToArray());
         }
         /// <summary>
         /// 獲取啟用代收類別

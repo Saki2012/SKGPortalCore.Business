@@ -16,12 +16,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             int count = 0;
             decimal payAmount = 0, channelFee = 0;
-            foreach (ChannelEAccountBillDetailModel s in set.ChannelEAccountBillDetail)
+            set.ChannelEAccountBillDetail.ForEach(row =>
             {
-                payAmount += s.ReceiptBill.PayAmount;
-                channelFee += s.ReceiptBill.ChargePayType == ChargePayType.Deduction ? s.ReceiptBill.ChannelFee : 0m;
+                payAmount += row.ReceiptBill.PayAmount;
+                channelFee += row.ReceiptBill.ChargePayType == ChargePayType.Deduction ? row.ReceiptBill.ChannelFee : 0m;
                 count++;
-            }
+            });
             set.ChannelEAccountBill.Amount = payAmount;
             set.ChannelEAccountBill.ExpectRemitAmount = payAmount - channelFee;
             set.ChannelEAccountBill.PayCount = count;
@@ -36,17 +36,25 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         #endregion
 
         #region Private
+
+        #region SetData
+
+        #endregion
+
+        #region PostingData
         /// <summary>
         /// 過帳收款單
         /// </summary>
         private static void PostingReceiptBill(ChannelEAccountBillSet set, ApplicationDbContext dataAccess)
         {
-            foreach (var c in set.ChannelEAccountBillDetail)
+            foreach (var detail in set.ChannelEAccountBillDetail)
             {
-                c.ReceiptBill.ChannelEAccountBillNo = set.ChannelEAccountBill.BillNo;
-                dataAccess.Update(c.ReceiptBill);
+                detail.ReceiptBill.ChannelEAccountBillNo = set.ChannelEAccountBill.BillNo;
+                dataAccess.Update(detail.ReceiptBill);
             }
         }
+        #endregion
+
         #endregion
     }
 }

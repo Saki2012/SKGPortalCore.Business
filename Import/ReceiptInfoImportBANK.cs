@@ -134,20 +134,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         {
             List<ReceiptInfoBillBankModel> models = modelSources as List<ReceiptInfoBillBankModel>;
             using ReceiptBillRepository billRepo = new ReceiptBillRepository(DataAccess) { Message = Message, User = SystemOperator.SysOperator };
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Reset();
-            sw.Start();
-            int i = 0;
             models.ForEach(model =>
             {
-                BizReceiptInfo.CheckData(model, Message);
                 ReceiptBillSet set = BizReceiptInfo.GetReceiptBillSet(model);
                 billRepo.Create(set);
-                Console.WriteLine($"({++i})Create Time:{sw.Elapsed.TotalSeconds}");
             });
             billRepo.CommitData(FuncAction.Create);
-            Console.WriteLine($"CommitData Time:{sw.Elapsed.TotalSeconds}");
-            sw.Stop();
         }
         /// <summary>
         /// 移動檔案至成功/失敗之資料夾

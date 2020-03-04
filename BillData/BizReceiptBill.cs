@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.System;
+using SKGPortalCore.Model.SystemTable;
 using SKGPortalCore.Repository.BillData;
 using SKGPortalCore.Repository.MasterData;
+using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
@@ -19,22 +22,13 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     {
         #region Public
         /// <summary>
-        /// 檢查資料
-        /// </summary>
-        /// <param name="set"></param>
-        /// <param name="message"></param>
-        public static void CheckData(ReceiptBillSet set, SysMessageLog message)
-        {
-
-        }
-        /// <summary>
         /// 設置欄位值
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
         public static void SetData(ReceiptBillSet set, ApplicationDbContext dataAccess, Dictionary<string, BizCustomerSet> bizCustSetDic, Dictionary<string, CollectionTypeSet> colSetDic, Dictionary<DateTime, bool> workDic)
         {
-            BizCustomerSet bizCustomerSet = GetBizCustomerSet(dataAccess, bizCustSetDic, set.ReceiptBill.BankBarCode);
+            BizCustomerSet bizCustomerSet = GetBizCustomerSet(dataAccess, bizCustSetDic, set.ReceiptBill.VirtualAccountCode);
             CollectionTypeSet collectionTypeSet = GetCollectionTypeSet(dataAccess, colSetDic, set.ReceiptBill.CollectionTypeId);
             SetBizCustomer(set.ReceiptBill, bizCustomerSet.BizCustomer);
             SetBillNo(dataAccess, set.ReceiptBill);
@@ -47,12 +41,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         public static void PostingData(ApplicationDbContext dataAccess, IUserModel user, FuncAction action, ReceiptBillSet oldData, ReceiptBillSet newData)
         {
-            PostingBillReceiptDetail(dataAccess, newData.ReceiptBill, newData.ReceiptBill.ToBillNo);
+            PostingBillReceiptDetail(dataAccess, newData.ReceiptBill);
             //PostingChannelEAccount(dataAccess, user, newData);
         }
         #endregion
 
         #region Private
+
+        #region CheckData
+
+        #endregion
+
+        #region SetData
         /// <summary>
         /// 根據銷帳編號獲取商戶資料
         /// </summary>
@@ -129,7 +129,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static void SetBillNo(ApplicationDbContext DataAccess, ReceiptBillModel receiptBill)
         {
-            receiptBill.ToBillNo = DataAccess.Set<BillModel>().Where(p => p.VirtualAccountCode == receiptBill.BankBarCode && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)).OrderByDescending(p => p.CreateTime).Select(p => p.BillNo).FirstOrDefault();
+            if (BizVirtualAccountCode.CheckBankCodeExist(DataAccess, receiptBill.VirtualAccountCode, out VirtualAccountCodeModel virtualAccount))
+            {
+                receiptBill.BillProgId = virtualAccount.SourceProgId;
+                receiptBill.ToBillNo = virtualAccount.SourceBillNo;
+            }
+            else
+            {
+                receiptBill.BillProgId = string.Empty;
+                receiptBill.ToBillNo = string.Empty;
+            }
         }
         /// <summary>
         /// 設置費用
@@ -342,16 +351,31 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="receiptBill"></param>
         private static void SetErrMessage(ReceiptBillModel receiptBill)
         {
-            receiptBill.ErrMessage = "";
+            StringBuilder strBuilder = new StringBuilder();
+            int i = 1;
+            if (receiptBill.CustomerCode.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析企業編號");
+            if (receiptBill.CollectionTypeId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收類別代號");
+            if (receiptBill.ChannelId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收通路");
+            if (receiptBill.TradeDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析交易日期");
+            if (receiptBill.TransDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析傳輸日期");
+            if (receiptBill.ExpectRemitDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析預計匯款日");
+            if (receiptBill.PayAmount == 0m) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析實繳金額");
+            if (!(receiptBill.Customer.ChannelIds.Split(',').Contains(receiptBill.ChannelId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收通路");
+            if (!(receiptBill.Customer.CollectionTypeIds.Split(',').Contains(receiptBill.CollectionTypeId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收類別");
+            receiptBill.ErrMessage = strBuilder.ToString();
             receiptBill.IsErrData = !receiptBill.ErrMessage.IsNullOrEmpty();
         }
+        #endregion
+
+        #region PostingData
         /// <summary>
         /// 過帳帳單收款明細
         /// </summary>
         /// <param name="receiptBillNo"></param>
         /// <param name="billNo"></param>
-        private static void PostingBillReceiptDetail(ApplicationDbContext dataAccess, ReceiptBillModel receipt, string billNo)
+        private static void PostingBillReceiptDetail(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
         {
+            string billNo = receipt.ToBillNo;
             if (billNo.IsNullOrEmpty()) return;
             BillModel bill = dataAccess.Find<BillModel>(billNo);
             BillReceiptDetailModel dt = new BillReceiptDetailModel() { BillNo = billNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
@@ -359,6 +383,36 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             bill.HadPayAmount += receipt.PayAmount;
             bill.PayStatus = BizBill.GetPayStatus(bill.PayAmount, bill.HadPayAmount);
             dataAccess.Update(bill);
+        }
+        /// <summary>
+        /// 過帳通路電子帳簿
+        /// </summary>
+        private static void PostingChannelEAccount(ApplicationDbContext dataAccess, IUserModel user, ReceiptBillSet set)
+        {
+            if (set.ReceiptBill.ExpectRemitDate == DateTime.MinValue) return;
+            LibDataAccess.CreateDataAccess();
+            using ChannelEAccountBillRepository repo = new ChannelEAccountBillRepository(dataAccess) { User = user };
+            var channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
+            if (null == channelEAccount)
+            {
+                ChannelEAccountBillSet accountSet = CreateChannelEAccountBill(set.ReceiptBill);
+                repo.Create(accountSet);
+            }
+            else
+            {
+                ChannelEAccountBillSet accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
+                if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
+                    accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
+                repo.Update(accountSet);
+            }
+            if (null == channelEAccount)
+            {
+                //repo.Create(set);
+            }
+            else
+            {
+                //repo.Update(set);
+            }
         }
         /// <summary>
         /// 生成電子通路帳簿
@@ -376,36 +430,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                     ExpectRemitDate = model.ExpectRemitDate,
                     PostponeDays = 0,
                 },
-                ChannelEAccountBillDetail = new List<ChannelEAccountBillDetailModel>()
-                {
-                    new ChannelEAccountBillDetailModel()
-                    {
-                        ReceiptBillNo= model.BillNo,
-                    }
-                }
+                ChannelEAccountBillDetail = new List<ChannelEAccountBillDetailModel>(),
             };
         }
-        /// <summary>
-        /// 過帳通路電子帳簿
-        /// </summary>
-        private static void PostingChannelEAccount(ApplicationDbContext dataAccess, IUserModel user, ReceiptBillSet set)
-        {
-            if (set.ReceiptBill.ExpectRemitDate == DateTime.MinValue) return;
-            using ChannelEAccountBillRepository repo = new ChannelEAccountBillRepository(dataAccess) { User = user };
-            var channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
-            if (null == channelEAccount)
-            {
-                ChannelEAccountBillSet accountSet = CreateChannelEAccountBill(set.ReceiptBill);
-                repo.Create(accountSet);
-            }
-            else
-            {
-                ChannelEAccountBillSet accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
-                if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
-                    accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
-                repo.Update(accountSet);
-            }
-        }
+        #endregion
+
         #endregion
     }
 }
