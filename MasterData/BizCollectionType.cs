@@ -19,8 +19,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="message"></param>
         public static void CheckData(CollectionTypeSet set, SysMessageLog message)
         {
-            if (CheckIsOverlap(set.CollectionTypeDetail, out string channelName)) { message.AddCustErrorMessage(MessageCode.Code1013, channelName); }
-            if (CheckChannelVerifyPeriod(set.CollectionTypeDetail, set.CollectionTypeVerifyPeriod, out channelName)) { message.AddCustErrorMessage(MessageCode.Code1014, channelName); }
+            CheckIsOverlap(message, set.CollectionTypeDetail);
+            CheckChannelVerifyPeriod(message, set);
         }
         /// <summary>
         /// 設置資料
@@ -29,6 +29,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         public static void SetData(CollectionTypeSet set)
         {
             SetCollectionTypeDetail(set.CollectionTypeDetail);
+            RemoveNotUsedPeriod(set);
         }
         #endregion
 
@@ -40,25 +41,27 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// </summary>
         /// <param name="detail"></param>
         /// <returns></returns>
-        private static bool CheckIsOverlap(List<CollectionTypeDetailModel> detail, out string channelName)
+        private static void CheckIsOverlap(SysMessageLog message, List<CollectionTypeDetailModel> detail)
         {
             List<CollectionTypeDetailModel> dt = detail.Where(p => detail.Where(
                     q => p.RowId != q.RowId && p.ChannelId == q.ChannelId &&
                     (p.SRange >= q.SRange && p.SRange <= q.ERange || p.ERange >= q.SRange && p.ERange <= q.ERange)
                     ).Any()).ToList();
-            channelName = string.Empty; channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName));
-            return null == dt;
+            string channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName).Distinct().ToArray());
+            if (!channelName.IsNullOrEmpty()) message.AddCustErrorMessage(MessageCode.Code1013, channelName);
         }
         /// <summary>
         /// 檢查是否有通路尚未填寫核銷規則
         /// </summary>
         /// <returns></returns>
-        private static bool CheckChannelVerifyPeriod(List<CollectionTypeDetailModel> detail, List<CollectionTypeVerifyPeriodModel> period, out string channelName)
+        private static void CheckChannelVerifyPeriod(SysMessageLog message, CollectionTypeSet set)
         {
-            List<string> channelNames = period.Where(p => detail.Where(q => q.ChannelId != p.ChannelId).Any()).Select(p => p.Channel.ChannelName).ToList();
-            channelName = string.Empty;
-            channelName = LibData.Merge(",", false, channelNames);
-            return channelNames.HasData();
+            Dictionary<string, string> detail = set.CollectionTypeDetail.Select(p => p.Channel).Distinct().ToDictionary(p => p.ChannelId, q => q.ChannelName);
+            Dictionary<string, CollectionTypeVerifyPeriodModel> period = set.CollectionTypeVerifyPeriod.ToDictionary(p => p.ChannelId, q => q);
+            List<string> detailExpectChannels = detail.Keys.Except(period.Keys).ToList();
+            string[] notWriteChannels = detail?.Where(p => p.Key.In(detailExpectChannels.ToArray())).Select(p => p.Value).Distinct().ToArray();
+            string channelName = LibData.Merge(",", false, notWriteChannels);
+            if (!channelName.IsNullOrEmpty()) message.AddCustErrorMessage(MessageCode.Code1014, channelName);
         }
         #endregion
 
@@ -75,6 +78,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             {
                 row.ChannelTotalFee = row.ChannelFee + row.ChannelFeedBackFee + row.ChannelRebateFee;
             });
+        }
+        /// <summary>
+        /// 移除核銷週期未在費率明細裡出現過的代收通路項目
+        /// </summary>
+        /// <param name="set"></param>
+        private static void RemoveNotUsedPeriod(CollectionTypeSet set)
+        {
+            List<string> detail = set.CollectionTypeDetail.Select(p => p.ChannelId).Distinct().ToList();
+            Dictionary<string, CollectionTypeVerifyPeriodModel> period = set.CollectionTypeVerifyPeriod.ToDictionary(p => p.ChannelId, q => q);
+            List<string> periodExpectChannels = period.Keys.Except(detail).ToList();
+            List<CollectionTypeVerifyPeriodModel> removePeriods = period.Where(p => p.Key.In(periodExpectChannels.ToArray())).Select(p => p.Value).ToList();
+            removePeriods.ForEach(row => set.CollectionTypeVerifyPeriod.Remove(row));
         }
         #endregion
 

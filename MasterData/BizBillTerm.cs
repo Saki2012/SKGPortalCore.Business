@@ -30,7 +30,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         private static void CheckTermNoLen(SysMessageLog message, BillTermModel billTerm)
         {
             if (billTerm.BizCustomer.BillTermLen != billTerm.BillTermNo.Length)
-                message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription(billTerm.BillTermNo), billTerm.BizCustomer.BillTermLen);
+                message.AddCustErrorMessage(MessageCode.Code1005, ResxManage.GetDescription<BillTermModel>(p => p.BillTermNo), billTerm.BizCustomer.BillTermLen);
         }
         /// <summary>
         /// 檢查期別編號是否重複
@@ -40,9 +40,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static void CheckTermNoExist(SysMessageLog message, ApplicationDbContext dataAccess, BillTermModel billTerm)
         {
-            if (dataAccess.Set<BillTermModel>().Any(p => p.InternalId != billTerm.InternalId && p.CustomerCode == billTerm.CustomerCode 
-            && p.BillTermNo == billTerm.BillTermNo && p.FormStatus.In(FormStatus.Saved, FormStatus.Approved)))
-                message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(billTerm.BillTermNo), billTerm.BillTermNo);
+            if (dataAccess.Set<BillTermModel>().Any(p => p.InternalId != billTerm.InternalId && p.CustomerCode == billTerm.CustomerCode
+            && p.BillTermNo == billTerm.BillTermNo && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)))
+                message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription<BillTermModel>(p => p.BillTermNo), billTerm.BillTermNo);
         }
         /// <summary>
         /// 檢查「期別編號」是否為數字
@@ -51,7 +51,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         private static void CheckTermNo(SysMessageLog message, BillTermModel billTerm)
         {
             if (!billTerm.BillTermNo.IsNumberString())
-                message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription(billTerm));
+                message.AddCustErrorMessage(MessageCode.Code1006, ResxManage.GetDescription<BillTermModel>(p => p.BillTermNo));
         }
         #endregion
     }

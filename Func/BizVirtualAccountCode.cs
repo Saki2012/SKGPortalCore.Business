@@ -15,8 +15,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
     public static class BizVirtualAccountCode
     {
         #region Const
-        private readonly static string martCrypt1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ+%-. $/1234567890";
-        private readonly static string martCrypt2 = "1234567891234567892345678912678901234567890";
+        private const string martCrypt1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ+%-. $/1234567890";
+        private const string martCrypt2 = "1234567891234567892345678912678901234567890";
         #endregion
 
         #region Public

@@ -39,10 +39,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <summary>
         /// 過帳資料
         /// </summary>
-        public static void PostingData(ApplicationDbContext dataAccess, IUserModel user, FuncAction action, ReceiptBillSet oldData, ReceiptBillSet newData)
+        public static void PostingData(ApplicationDbContext dataAccess, IUserModel user, /* FuncAction action, ReceiptBillSet oldData,*/ ReceiptBillSet newData)
         {
             PostingBillReceiptDetail(dataAccess, newData.ReceiptBill);
-            //PostingChannelEAccount(dataAccess, user, newData);
+            PostingChannelEAccount(dataAccess, user, newData);
         }
         #endregion
 
@@ -149,8 +149,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelType == receiptBill.Channel.ChannelGroupType);
             BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelType == ChannelGroupType.Hitrust);
             receiptBill.ChargePayType = collectionTypeSet.CollectionType.ChargePayType;
-            receiptBill.FeeType = bizCustomerFeeDetailModel.BankFeeType;
-            if (receiptBill.FeeType == BankFeeType.TotalFee)
+            receiptBill.BankFeeType = bizCustomerFeeDetailModel.BankFeeType;
+            if (receiptBill.BankFeeType == BankFeeType.TotalFee)
             {
                 switch (receiptBill.CollectionType.ChargePayType)
                 {
@@ -178,7 +178,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             receiptBill.ChannelRebateFee = collectionTypeDetailModel.ChannelRebateFee;
             receiptBill.ChannelFee = collectionTypeDetailModel.ChannelFee;
             receiptBill.ChannelTotalFee = collectionTypeDetailModel.ChannelTotalFee;
-            receiptBill.TotalFee = receiptBill.FeeType == BankFeeType.TotalFee ? bizCustomerFeeDetailModel.Fee : collectionTypeDetailModel.ChannelTotalFee;
+            receiptBill.TotalFee = receiptBill.BankFeeType == BankFeeType.TotalFee ? bizCustomerFeeDetailModel.Fee : collectionTypeDetailModel.ChannelTotalFee;
         }
         /// <summary>
         /// 計算 每筆總手續費之「系統商手續費」(內扣)
@@ -211,7 +211,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static void SetRemitDate(ReceiptBillModel receiptBill, CollectionTypeSet collectionTypeSet, Dictionary<DateTime, bool> workDic)
         {
-            DateTime expectRemitDate = DateTime.MinValue;
+            DateTime expectRemitDate = receiptBill.ExpectRemitDate;
             if (!receiptBill.Channel.ChannelGroupType.In(ChannelGroupType.Bank, ChannelGroupType.Self))
             {
                 CollectionTypeVerifyPeriodModel period = collectionTypeSet.CollectionTypeVerifyPeriod.Where(p => p.ChannelId == receiptBill.ChannelId).FirstOrDefault();
@@ -353,15 +353,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             StringBuilder strBuilder = new StringBuilder();
             int i = 1;
-            if (receiptBill.CustomerCode.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析企業編號");
-            if (receiptBill.CollectionTypeId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收類別代號");
-            if (receiptBill.ChannelId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收通路");
-            if (receiptBill.TradeDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析交易日期");
-            if (receiptBill.TransDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析傳輸日期");
-            if (receiptBill.ExpectRemitDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析預計匯款日");
-            if (receiptBill.PayAmount == 0m) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析實繳金額");
-            if (!(receiptBill.Customer.ChannelIds.Split(',').Contains(receiptBill.ChannelId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收通路");
-            if (!(receiptBill.Customer.CollectionTypeIds.Split(',').Contains(receiptBill.CollectionTypeId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收類別");
+            if (receiptBill.CustomerCode.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析企業編號。");
+            if (receiptBill.CollectionTypeId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收類別代號。");
+            if (receiptBill.ChannelId.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析代收通路。");
+            if (receiptBill.TradeDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析交易日期。");
+            if (receiptBill.TransDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析傳輸日期。");
+            if (receiptBill.ExpectRemitDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析預計匯款日。");
+            if (receiptBill.PayAmount.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析實繳金額。");
+            if (!(receiptBill.Customer.ChannelIds.Split(',').Contains(receiptBill.ChannelId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收通路。");
+            if (!(receiptBill.Customer.CollectionTypeIds.Split(',').Contains(receiptBill.CollectionTypeId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收類別。");
+            if (receiptBill.ToBillNo.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無帳單資料。");
             receiptBill.ErrMessage = strBuilder.ToString();
             receiptBill.IsErrData = !receiptBill.ErrMessage.IsNullOrEmpty();
         }
@@ -392,27 +393,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (set.ReceiptBill.ExpectRemitDate == DateTime.MinValue) return;
             LibDataAccess.CreateDataAccess();
             using ChannelEAccountBillRepository repo = new ChannelEAccountBillRepository(dataAccess) { User = user };
-            var channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
+            ChannelEAccountBillModel channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
+            if (null == channelEAccount) channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().Local.FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
+            ChannelEAccountBillSet accountSet;
             if (null == channelEAccount)
             {
-                ChannelEAccountBillSet accountSet = CreateChannelEAccountBill(set.ReceiptBill);
-                repo.Create(accountSet);
+                accountSet = CreateChannelEAccountBill(set.ReceiptBill);
+                channelEAccount = repo.Create(accountSet).ChannelEAccountBill;
             }
-            else
-            {
-                ChannelEAccountBillSet accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
-                if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
-                    accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
-                repo.Update(accountSet);
-            }
-            if (null == channelEAccount)
-            {
-                //repo.Create(set);
-            }
-            else
-            {
-                //repo.Update(set);
-            }
+            accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
+            if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
+                accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
+            repo.Update(accountSet);
         }
         /// <summary>
         /// 生成電子通路帳簿

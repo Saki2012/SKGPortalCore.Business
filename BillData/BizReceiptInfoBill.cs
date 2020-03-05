@@ -41,7 +41,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = model.CollectionType.Trim(),
+                    CollectionTypeId = model.CollectionType.Trim().Trim(),
                     ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel)?.ChannelId,
                     TransDate = model.TradeDate.ROCDateToCEDate().AddDays(1),
                     TradeDate = model.TradeDate.ROCDateToCEDate(),
@@ -61,7 +61,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = model.CollectionType,
+                    CollectionTypeId = model.CollectionType.Trim(),
                     ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
                     TransDate = model.AccountingDay.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
@@ -81,7 +81,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = model.CollectionType,
+                    CollectionTypeId = model.CollectionType.Trim(),
                     ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
                     TransDate = model.TransDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),

@@ -29,7 +29,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static void CheckData(BillSet set, SysMessageLog message, ApplicationDbContext dataAccess)
         {
             if (BizVirtualAccountCode.CheckBankCodeExist(dataAccess, set.Bill.VirtualAccountCode, out _))
-            { message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription(set.Bill.VirtualAccountCode), set.Bill.VirtualAccountCode); }
+            { message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription<BillModel>(p => p.VirtualAccountCode), set.Bill.VirtualAccountCode); }
+            CalcTotalPayAmount(set);
             CheckPayEndDate(message, set.Bill);
             CheckCollectionTypeId(message, dataAccess, set.Bill);
         }
@@ -40,7 +41,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="action"></param>
         public static void SetData(BillSet set)
         {
-            SetBillDetail(set.Bill, set.BillDetail);
+            //SetBillDetail(set.Bill, set.BillDetail);
             SetBillReceiptDetail(set.Bill, set.BillReceiptDetail);
             SetBankCode(set.Bill);
             ResetPayEndDateAndCollectionType(set.Bill);
@@ -105,7 +106,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// 
         /// </summary>
         /// <param name="set"></param>
-        public static void PrintBill(BillSet set)
+        public static void PrintBill(/*BillSet set*/)
         {
             using PDFDoc pdfdoc = new PDFDoc();
             pdftron.PDF.Convert.OfficeToPDF(pdfdoc, $"{ReportTemplate.TemplatePath}{ReportTemplate.BillTemplate}.docx", null);
@@ -130,7 +131,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         private static void CheckPayEndDate(SysMessageLog message, BillModel bill)
         {
             if ((bill.BizCustomer.MarketEnable || bill.BizCustomer.PostEnable) && (bill.PayEndDate == null || bill.PayEndDate == DateTime.MinValue))
-                message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(bill.PayEndDate));
+                message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BillModel>(p => p.PayEndDate));
         }
         /// <summary>
         /// 檢查超商代收項目
@@ -143,7 +144,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (bill.BizCustomer.MarketEnable)
             {
                 if (bill.CollectionTypeId.IsNullOrEmpty())
-                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(bill.CollectionTypeId));
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BillModel>(p => p.CollectionTypeId));
                 else
                 {
                     if (!bill.BizCustomer.CollectionTypeIds.Split(',').Contains(bill.CollectionTypeId))
@@ -214,14 +215,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="DataAccess"></param>
         /// <param name="Bill"></param>
         /// <param name="BillDetail"></param>
-        private static void SetBillDetail(BillModel Bill, List<BillDetailModel> BillDetail)
-        {
-            Bill.PayAmount = 0m;
-            BillDetail?.ForEach(row =>
-            {
-                Bill.PayAmount += row.PayAmount;
-            });
-        }
+        //private static void SetBillDetail( List<BillDetailModel> BillDetail)
+        //{
+        //    BillDetail?.ForEach(row =>
+        //    {
+        //    });
+        //}
         /// <summary>
         /// 
         /// </summary>
@@ -236,6 +235,14 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 Bill.HadPayAmount += row.ReceiptBill.PayAmount;
             });
             Bill.PayStatus = GetPayStatus(Bill.PayAmount, Bill.HadPayAmount);
+        }
+        /// <summary>
+        /// 彙總應繳金額
+        /// </summary>
+        /// <param name="set"></param>
+        private static void CalcTotalPayAmount(BillSet set)
+        {
+            set.Bill.PayAmount = set.BillDetail.Sum(row => row.PayAmount);
         }
         #endregion
 

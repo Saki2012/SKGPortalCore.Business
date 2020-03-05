@@ -115,7 +115,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         {
             List<dynamic> result = new List<dynamic>();
             DateTime now = DateTime.Now;
-            string importBatchNo = $"MARKET{now.ToString("yyyyMMddhhmmss")}";
+            string importBatchNo = $"MART{now.ToString("yyyyMMddhhmmss")}";
             foreach (int line in sources.Keys)
             {
                 if (LibData.ByteSubString(sources[line], 9, 3) == "I0O")

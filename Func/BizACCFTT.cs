@@ -77,7 +77,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Market,
-                    BankFeeType = BankFeeType.ClearFeeA,
+                    BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.ACTFEE.ToDecimal(),
                     Percent = 0m
                 });
@@ -90,7 +90,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Post,
-                    BankFeeType = BankFeeType.ClearFeeA,
+                    BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.ACTFEEPT.ToDecimal(),
                     Percent = 0m,
                 });
@@ -160,7 +160,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
                     ChannelType = ChannelGroupType.Market,
-                    BankFeeType = BankFeeType.ClearFeeA,
+                    BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.AGRIFEE.ToDecimal(),
                     Percent = 0,
                 });

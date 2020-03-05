@@ -56,13 +56,13 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         {
             if (set.BizCustomerFeeDetail.Any(p => p.ChannelType == ChannelGroupType.Hitrust))
             {
-                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust || set.BizCustomer.IntroCustomerCode.IsNullOrEmpty())
-                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(set.BizCustomer.IntroCustomerCode));
+                if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust)
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BizCustomerModel>(p => p.IntroCustomerCode));
             }
             if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.Percent > 0m))
             {
-                if (set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer || set.BizCustomer.IntroCustomerCode.IsNullOrEmpty())
-                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription(set.BizCustomer.IntroCustomerCode));
+                if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer)
+                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BizCustomerModel>(p => p.IntroCustomerCode));
             }
         }
         /// <summary>

@@ -23,6 +23,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 count++;
             });
             set.ChannelEAccountBill.Amount = payAmount;
+            set.ChannelEAccountBill.Fee = channelFee;
             set.ChannelEAccountBill.ExpectRemitAmount = payAmount - channelFee;
             set.ChannelEAccountBill.PayCount = count;
         }
@@ -31,7 +32,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         public static void PostingData(ChannelEAccountBillSet set, ApplicationDbContext dataAccess)
         {
-            PostingReceiptBill(set, dataAccess);
         }
         #endregion
 
@@ -42,17 +42,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         #endregion
 
         #region PostingData
-        /// <summary>
-        /// 過帳收款單
-        /// </summary>
-        private static void PostingReceiptBill(ChannelEAccountBillSet set, ApplicationDbContext dataAccess)
-        {
-            foreach (var detail in set.ChannelEAccountBillDetail)
-            {
-                detail.ReceiptBill.ChannelEAccountBillNo = set.ChannelEAccountBill.BillNo;
-                dataAccess.Update(detail.ReceiptBill);
-            }
-        }
+
         #endregion
 
         #endregion
