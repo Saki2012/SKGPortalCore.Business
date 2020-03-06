@@ -376,14 +376,49 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="billNo"></param>
         private static void PostingBillReceiptDetail(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
         {
-            string billNo = receipt.ToBillNo;
-            if (billNo.IsNullOrEmpty()) return;
-            BillModel bill = dataAccess.Find<BillModel>(billNo);
-            BillReceiptDetailModel dt = new BillReceiptDetailModel() { BillNo = billNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
+            if (receipt.ToBillNo.IsNullOrEmpty()) return;
+            switch (receipt.BillProgId)
+            {
+                case "Bill"://帳單
+                    PostingBill(dataAccess, receipt);
+                    break;
+                case "AutoDebitBill"://約定扣款
+                    PostingAutoDebitBill(dataAccess, receipt);
+                    break;
+                case "DepositBill"://入金機
+                    PostingDepositBill(dataAccess, receipt);
+                    break;
+            }
+        }
+        /// <summary>
+        /// 過帳至帳單
+        /// </summary>
+        /// <param name="dataAccess"></param>
+        /// <param name="receipt"></param>
+        private static void PostingBill(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
+        {
+            BillModel bill = dataAccess.Find<BillModel>(receipt.BillNo);
+            BillReceiptDetailModel dt = new BillReceiptDetailModel() { BillNo = receipt.BillNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
             dataAccess.Add(dt);
             bill.HadPayAmount += receipt.PayAmount;
             bill.PayStatus = BizBill.GetPayStatus(bill.PayAmount, bill.HadPayAmount);
             dataAccess.Update(bill);
+        }
+        /// <summary>
+        /// 過帳至約定扣款
+        /// </summary>
+        private static void PostingAutoDebitBill(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
+        {
+            AutoDebitBillReceiptDetailModel dt = new AutoDebitBillReceiptDetailModel() { BillNo = receipt.BillNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
+            dataAccess.Add(dt);
+        }
+        /// <summary>
+        /// 過帳至入金機
+        /// </summary>
+        private static void PostingDepositBill(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
+        {
+            DepositBillReceiptDetailModel dt = new DepositBillReceiptDetailModel() { BillNo = receipt.BillNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
+            dataAccess.Add(dt);
         }
         /// <summary>
         /// 過帳通路電子帳簿
