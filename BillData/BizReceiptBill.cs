@@ -397,8 +397,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="receipt"></param>
         private static void PostingBill(ApplicationDbContext dataAccess, ReceiptBillModel receipt)
         {
-            BillModel bill = dataAccess.Find<BillModel>(receipt.BillNo);
-            BillReceiptDetailModel dt = new BillReceiptDetailModel() { BillNo = receipt.BillNo, ReceiptBill = receipt, ReceiptBillNo = receipt.BillNo, RowState = RowState.Insert };
+            BillModel bill = dataAccess.Find<BillModel>(receipt.ToBillNo);
+            BillReceiptDetailModel dt = new BillReceiptDetailModel() { BillNo = receipt.ToBillNo, ReceiptBill = receipt, ReceiptBillNo = receipt.ToBillNo, RowState = RowState.Insert };
             dataAccess.Add(dt);
             bill.HadPayAmount += receipt.PayAmount;
             bill.PayStatus = BizBill.GetPayStatus(bill.PayAmount, bill.HadPayAmount);
