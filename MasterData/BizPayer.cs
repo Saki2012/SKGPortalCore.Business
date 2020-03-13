@@ -16,7 +16,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         {
             CheckPayerNoLen(message, set.Payer);
             CheckPayerNoIsNotNum(message, set.Payer.PayerNo);
-            CheckTermNoExist(message, dataAccess, set.Payer);
+            CheckPayerNoExist(message, dataAccess, set.Payer);
         }
         #endregion
 
@@ -43,12 +43,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         }
 
         /// <summary>
-        /// 檢查期別編號是否重複
+        /// 檢查繳款人編號是否重複
         /// </summary>
         /// <param name="dataAccess"></param>
         /// <param name="payer"></param>
         /// <returns></returns>
-        private static void CheckTermNoExist(SysMessageLog message, ApplicationDbContext dataAccess, PayerModel payer)
+        private static void CheckPayerNoExist(SysMessageLog message, ApplicationDbContext dataAccess, PayerModel payer)
         {
             if (dataAccess.Set<PayerModel>().Any(p => p.InternalId != payer.InternalId && p.CustomerCode == payer.CustomerCode
             && p.PayerNo == payer.PayerNo && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)))

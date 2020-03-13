@@ -2,6 +2,7 @@
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
@@ -9,10 +10,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
     internal static class BizBizCustomer
     {
         #region Public
+        /// <summary>
+        /// 檢查資料
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="set"></param>
         public static void CheckData(SysMessageLog message, BizCustomerSet set)
         {
             CheckVirtualAccountLength(message, set.BizCustomer);
             CheckBizCustType(message, set);
+            CheckIntroduceType(message, set.BizCustomerFeeDetail);
         }
         /// <summary>
         /// 設置資料
@@ -33,6 +40,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         #endregion
 
         #region Private
+        #region CheckData
         /// <summary>
         /// 檢查銷帳編號長度
         /// </summary>
@@ -54,17 +62,36 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="set"></param>
         private static void CheckBizCustType(SysMessageLog message, BizCustomerSet set)
         {
-            if (set.BizCustomerFeeDetail.Any(p => p.ChannelType == ChannelGroupType.Hitrust))
+            if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.Hitrust_ClearFee_CurMonth || p.BankFeeType == BankFeeType.Hitrust_ClearFee_NextMonth))
             {
                 if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust)
-                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BizCustomerModel>(p => p.IntroCustomerCode));
+                    message.AddCustErrorMessage(MessageCode.Code1019, ResxManage.GetDescription(BizCustType.Hitrust));
             }
             if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.Percent > 0m))
             {
                 if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer)
-                    message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BizCustomerModel>(p => p.IntroCustomerCode));
+                    message.AddCustErrorMessage(MessageCode.Code1019, ResxManage.GetDescription(BizCustType.Introducer));
             }
         }
+        /// <summary>
+        /// 檢查介紹商與Hitrust商是否衝突
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="detail"></param>
+        private static void CheckIntroduceType(SysMessageLog message, List<BizCustomerFeeDetailModel> detail)
+        {
+            bool introducer = false, hitrust = false;
+            detail.ForEach(p =>
+            {
+                if (p.BankFeeType == BankFeeType.TotalFee) introducer = true;
+                if (p.BankFeeType == BankFeeType.Hitrust_ClearFee_CurMonth || p.BankFeeType == BankFeeType.Hitrust_ClearFee_NextMonth) hitrust = true;
+            });
+            if (introducer && hitrust)
+                message.AddCustErrorMessage(MessageCode.Code1018);
+        }
+
+        #endregion
+        #region SetData
         /// <summary>
         /// 若銀行手續費類型不為每筆總手續費時，分潤%設置為0
         /// </summary>
@@ -73,6 +100,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         {
             if (row.BankFeeType != BankFeeType.TotalFee) row.Percent = 0;
         }
+        #endregion
         #endregion
     }
 }

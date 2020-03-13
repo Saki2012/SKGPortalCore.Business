@@ -147,7 +147,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             CollectionTypeDetailModel collectionTypeDetailModel = collectionTypeSet.CollectionTypeDetail.FirstOrDefault(p => p.ChannelId == receiptBill.ChannelId && (p.SRange <= receiptBill.PayAmount && p.ERange >= receiptBill.PayAmount));
             BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelType == receiptBill.Channel.ChannelGroupType);
-            BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelType == ChannelGroupType.Hitrust);
+            BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.BankFeeType == BankFeeType.Hitrust_ClearFee_CurMonth || p.BankFeeType == BankFeeType.Hitrust_ClearFee_NextMonth);
             receiptBill.ChargePayType = collectionTypeSet.CollectionType.ChargePayType;
             receiptBill.BankFeeType = bizCustomerFeeDetailModel.BankFeeType;
             if (receiptBill.BankFeeType == BankFeeType.TotalFee)
@@ -173,7 +173,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 receiptBill.BankFee = bizCustomerFeeDetailModel.Fee;
                 receiptBill.ThirdFee = 0m;
             }
-            receiptBill.ThirdFee = null != hiTrust ? hiTrust.Fee : receiptBill.ThirdFee;
+            receiptBill.ThirdFee = null != hiTrust ? hiTrust.Percent : receiptBill.ThirdFee;
             receiptBill.ChannelFeedBackFee = collectionTypeDetailModel.ChannelFeedBackFee;
             receiptBill.ChannelRebateFee = collectionTypeDetailModel.ChannelRebateFee;
             receiptBill.ChannelFee = collectionTypeDetailModel.ChannelFee;
