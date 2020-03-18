@@ -28,15 +28,16 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(DepositBillSet set)
+        public static void SetData(DepositBillSet set,string progId,ApplicationDbContext dataAccess)
         {
+            BizVirtualAccountCode.AddVirtualAccountCode(dataAccess, progId, set.DepositBill.BillNo, set.DepositBill.VirtualAccountCode);
         }
         #endregion
 
         #region Private
 
         #region  CheckData
-  
+
         #endregion
 
         #region SetData

@@ -31,8 +31,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(AutoDebitBillSet set)
+        public static void SetData(AutoDebitBillSet set,string progId,ApplicationDbContext dataAccess)
         {
+            BizVirtualAccountCode.AddVirtualAccountCode(dataAccess, progId, set.AutoDebitBill.BillNo, set.AutoDebitBill.VirtualAccountCode);
             SetBankCode(set.AutoDebitBill);
         }
         #endregion

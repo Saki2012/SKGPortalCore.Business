@@ -39,9 +39,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(BillSet set)
+        public static void SetData(BillSet set,string progId,ApplicationDbContext dataAccess)
         {
             //SetBillDetail(set.Bill, set.BillDetail);
+            BizVirtualAccountCode.AddVirtualAccountCode(dataAccess, progId, set.Bill.BillNo, set.Bill.VirtualAccountCode);
+
             SetBillReceiptDetail(set.Bill, set.BillReceiptDetail);
             SetBankCode(set.Bill);
             ResetPayEndDateAndCollectionType(set.Bill);

@@ -439,7 +439,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
             if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
                 accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
-            repo.Update(accountSet);
+            repo.Update(new object[] { accountSet.ChannelEAccountBill.BillNo }, accountSet);
         }
         /// <summary>
         /// 生成電子通路帳簿

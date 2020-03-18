@@ -10,6 +10,7 @@ using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
 using SKGPortalCore.Model.System;
 using SKGPortalCore.Repository.MasterData;
+using SKGPortalCore.Repository.MasterData.User;
 using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
@@ -131,10 +132,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
                             {
                                 GetCustomerInfo(model, bizCustRepo, custRepo, custUserRepo, out BizCustomerSet bizCustomerSet, out CustomerSet customerSet, out CustUserSet custUserSet);
                                 if (null == customerSet) custRepo.Create(BizACCFTT.SetCustomer(model, customerSet));
-                                else custRepo.Update(BizACCFTT.SetCustomer(model, customerSet));
+                                else custRepo.Update(null,BizACCFTT.SetCustomer(model, customerSet));
                                 custRepo.CommitData(FuncAction.Create);
                                 if (null == bizCustomerSet) bizCustRepo.Create(BizACCFTT.SetBizCustomer(model, bizCustomerSet));
-                                else bizCustRepo.Update(BizACCFTT.SetBizCustomer(model, bizCustomerSet));
+                                else bizCustRepo.Update(null,BizACCFTT.SetBizCustomer(model, bizCustomerSet));
                                 bizCustRepo.CommitData(FuncAction.Create);
                                 if (null == custUserSet)
                                 {
