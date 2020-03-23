@@ -23,10 +23,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// <param name="secret">密鑰</param>
         /// <param name="userSet">使用者</param>
         /// <returns></returns>
-        public static List<PermissionToken> GetRolePermissionsToken(string secret, List<IRoleModel> userRoles)
+        public static List<PermissionTokenModel> GetRolePermissionsToken(string secret, List<IRoleModel> userRoles)
         {
             Dictionary<string, int> funcPermissionDic = new Dictionary<string, int>();
-            List<PermissionToken> funcPermissionTokenDic = new List<PermissionToken>();
+            List<PermissionTokenModel> funcPermissionTokenDic = new List<PermissionTokenModel>();
             foreach (IRoleModel userRole in userRoles)
             {
                 foreach (RolePermissionModel permission in userRole.Role.Permissions)
@@ -40,7 +40,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
             }
             foreach (string funcName in funcPermissionDic.Keys)
             {
-                funcPermissionTokenDic.Add(new PermissionToken() { FuncName = funcName, Token = LibJWT.GenerateToken(secret, funcName, funcPermissionDic[funcName].ToString()) });
+                funcPermissionTokenDic.Add(new PermissionTokenModel() { FuncName = funcName, Token = LibJWT.GenerateToken(secret, funcName, funcPermissionDic[funcName].ToString()) });
             }
             return funcPermissionTokenDic;
         }
