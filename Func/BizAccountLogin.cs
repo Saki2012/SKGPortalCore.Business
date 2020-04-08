@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
+using SKGPortalCore.Model.SourceData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {
@@ -86,7 +87,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// <returns></returns>
         public static bool CheckAuthenticate<TSet>(ResolveFieldContext<object> context, BasicRepository<TSet> repository, string sessionId, string progId, FuncAction action)
         {
-            if (repository.User.KeyId != SystemOperator.SysOperator.KeyId && !CheckAuthenticate(sessionId, context.GetArgument<string>("jwt"), progId, action))
+            if (repository.User.KeyId != SystemOperator.SysOperator.KeyId && !CheckAuthenticate(sessionId, context.GetArgument<string>(CP.GQL_JWT), progId, action))
             {
                 repository.Message.AddCustErrorMessage(MessageCode.Code0002, ResxManage.GetDescription<TSet>(), ResxManage.GetDescription(action));
                 context.Errors.AddRange(repository.Message.Errors);

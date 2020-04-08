@@ -20,7 +20,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = ConstParameter.BankCollectionTypeId,
+                    CollectionTypeId = CP.BankCollectionTypeId,
                     ChannelId = model.Channel,
                     TransDate = tradeDate,
                     TradeDate = tradeDate,

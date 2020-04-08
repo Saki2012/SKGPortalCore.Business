@@ -120,7 +120,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// 獲取郵局條碼1
         /// </summary>
         /// <returns></returns>
-        public static string GetPostBarCode1 { get { return ConstParameter.PostCollectionTypeId; } }
+        public static string GetPostBarCode1 { get { return CP.PostCollectionTypeId; } }
         /// <summary>
         /// 獲取郵局條碼2
         /// </summary>
