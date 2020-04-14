@@ -1,6 +1,5 @@
 ﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
-using SKGPortalCore.Model.SourceData;
 using SKGPortalCore.Model.System;
 using SKGPortalCore.Model.SystemTable;
 using System;
@@ -34,7 +33,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 
         public static void AddVirtualAccountCode(ApplicationDbContext dataAccess, string sourceProgId, string sourceBillNo, string virtualAccountCode)
         {
-            VirtualAccountCodeModel virtualAccount = new VirtualAccountCodeModel() { SourceProgId = sourceProgId, SourceBillNo = sourceBillNo, VirtualAccountCode = virtualAccountCode, };
+            VirtualAccountCodeModel virtualAccount = new VirtualAccountCodeModel() { SrcProgId = sourceProgId, SrcBillNo = sourceBillNo, VirtualAccountCode = virtualAccountCode, };
             dataAccess.Set<VirtualAccountCodeModel>().Add(virtualAccount);
         }
 
@@ -120,7 +119,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// 獲取郵局條碼1
         /// </summary>
         /// <returns></returns>
-        public static string GetPostBarCode1 { get { return CP.PostCollectionTypeId; } }
+        public static string GetPostBarCode1 { get { return SystemCP.PostCollectionTypeId; } }
         /// <summary>
         /// 獲取郵局條碼2
         /// </summary>

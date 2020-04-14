@@ -23,9 +23,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 count++;
             });
             set.ChannelEAccountBill.Amount = payAmount;
-            set.ChannelEAccountBill.Fee = channelFee;
+            set.ChannelEAccountBill.ChannelFee = channelFee;
             set.ChannelEAccountBill.ExpectRemitAmount = payAmount - channelFee;
-            set.ChannelEAccountBill.PayCount = count;
+            set.ChannelEAccountBill.TotalCount = count;
         }
         /// <summary>
         /// 過帳資料

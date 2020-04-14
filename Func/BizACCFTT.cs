@@ -76,10 +76,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Market,
+                    ChannelGroupType = ChannelGroupType.Market,
                     BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.ACTFEE.ToDecimal(),
-                    Percent = 0m
+                    IntroPercent = 0m
                 });
             }
 
@@ -89,10 +89,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Post,
+                    ChannelGroupType = ChannelGroupType.Post,
                     BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.ACTFEEPT.ToDecimal(),
-                    Percent = 0m,
+                    IntroPercent = 0m,
                 });
             }
 
@@ -110,7 +110,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     //ChannelType = ChannelGroupType.HiTrust,
                     //BankFeeType = BankFeeType.HitrustFee,
                     Fee = accftt.HIFARE.ToDecimal(),
-                    Percent = 0m,
+                    IntroPercent = 0m,
                 });
             }
             //銀行-每筆總手續費
@@ -120,10 +120,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Bank,
+                    ChannelGroupType = ChannelGroupType.Bank,
                     BankFeeType = BankFeeType.TotalFee,
                     Fee = accftt.ACTFEEBEFT.ToDecimal(),
-                    Percent = accftt.SHAREBEFTPERCENT.ToDecimal(),
+                    IntroPercent = accftt.SHAREBEFTPERCENT.ToDecimal(),
                 });
             }
             //超商-每筆總手續費
@@ -133,10 +133,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Market,
+                    ChannelGroupType = ChannelGroupType.Market,
                     BankFeeType = BankFeeType.TotalFee,
                     Fee = accftt.ACTFEEMART.ToDecimal(),
-                    Percent = accftt.ACTPERCENT.ToDecimal(),
+                    IntroPercent = accftt.ACTPERCENT.ToDecimal(),
                 });
             }
             //郵局-每筆總手續費
@@ -146,10 +146,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Post,
+                    ChannelGroupType = ChannelGroupType.Post,
                     BankFeeType = BankFeeType.TotalFee,
                     Fee = accftt.ACTFEEPOST.ToDecimal(),
-                    Percent = accftt.POSTPERCENT.ToDecimal(),
+                    IntroPercent = accftt.POSTPERCENT.ToDecimal(),
                 });
             }
             //農金-清算手續費
@@ -159,10 +159,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                 {
                     CustomerCode = custCode,
                     RowState = RowState.Insert,
-                    ChannelType = ChannelGroupType.Market,
+                    ChannelGroupType = ChannelGroupType.Market,
                     BankFeeType = BankFeeType.ClearFee_NextMonth,
                     Fee = accftt.AGRIFEE.ToDecimal(),
-                    Percent = 0,
+                    IntroPercent = 0,
                 });
             }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
@@ -20,7 +19,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 ReceiptBill = new ReceiptBillModel()
                 {
                     BillNo = "",
-                    CollectionTypeId = CP.BankCollectionTypeId,
+                    CollectionTypeId = SystemCP.BankCollectionTypeId,
                     ChannelId = model.Channel,
                     TransDate = tradeDate,
                     TradeDate = tradeDate,

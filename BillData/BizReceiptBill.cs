@@ -131,8 +131,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             if (BizVirtualAccountCode.CheckBankCodeExist(DataAccess, receiptBill.VirtualAccountCode, out VirtualAccountCodeModel virtualAccount))
             {
-                receiptBill.BillProgId = virtualAccount.SourceProgId;
-                receiptBill.ToBillNo = virtualAccount.SourceBillNo;
+                receiptBill.BillProgId = virtualAccount.SrcProgId;
+                receiptBill.ToBillNo = virtualAccount.SrcBillNo;
             }
             else
             {
@@ -146,7 +146,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         private static void SetFee(ReceiptBillModel receiptBill, BizCustomerSet bizCustomerSet, CollectionTypeSet collectionTypeSet)
         {
             CollectionTypeDetailModel collectionTypeDetailModel = collectionTypeSet.CollectionTypeDetail.FirstOrDefault(p => p.ChannelId == receiptBill.ChannelId && (p.SRange <= receiptBill.PayAmount && p.ERange >= receiptBill.PayAmount));
-            BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelType == receiptBill.Channel.ChannelGroupType);
+            BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelGroupType == receiptBill.Channel.ChannelGroupType);
             BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.BankFeeType == BankFeeType.Hitrust_ClearFee_CurMonth || p.BankFeeType == BankFeeType.Hitrust_ClearFee_NextMonth);
             receiptBill.ChargePayType = collectionTypeSet.CollectionType.ChargePayType;
             receiptBill.BankFeeType = bizCustomerFeeDetailModel.BankFeeType;
@@ -156,13 +156,13 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 {
                     case ChargePayType.Deduction:
                         {
-                            receiptBill.ThirdFee = FeeDeduct(bizCustomerFeeDetailModel.Fee, collectionTypeDetailModel.ChannelTotalFee, bizCustomerFeeDetailModel.Percent);
+                            receiptBill.ThirdFee = FeeDeduct(bizCustomerFeeDetailModel.Fee, collectionTypeDetailModel.ChannelTotalFee, bizCustomerFeeDetailModel.IntroPercent);
                             receiptBill.BankFee = bizCustomerFeeDetailModel.Fee - receiptBill.ThirdFee;
                         }
                         break;
                     case ChargePayType.Increase:
                         {
-                            receiptBill.ThirdFee = FeePlus(bizCustomerFeeDetailModel.Fee, bizCustomerFeeDetailModel.Percent);
+                            receiptBill.ThirdFee = FeePlus(bizCustomerFeeDetailModel.Fee, bizCustomerFeeDetailModel.IntroPercent);
                             receiptBill.BankFee = bizCustomerFeeDetailModel.Fee - receiptBill.ThirdFee;
                         }
                         break;
@@ -173,7 +173,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 receiptBill.BankFee = bizCustomerFeeDetailModel.Fee;
                 receiptBill.ThirdFee = 0m;
             }
-            receiptBill.ThirdFee = null != hiTrust ? hiTrust.Percent : receiptBill.ThirdFee;
+            receiptBill.ThirdFee = null != hiTrust ? hiTrust.IntroPercent : receiptBill.ThirdFee;
             receiptBill.ChannelFeedBackFee = collectionTypeDetailModel.ChannelFeedBackFee;
             receiptBill.ChannelRebateFee = collectionTypeDetailModel.ChannelRebateFee;
             receiptBill.ChannelFee = collectionTypeDetailModel.ChannelFee;

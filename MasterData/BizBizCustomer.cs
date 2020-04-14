@@ -30,8 +30,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
             bool marketEnable = false, postEnable = false;
             set.BizCustomerFeeDetail.ForEach(row =>
             {
-                if (row.ChannelType == ChannelGroupType.Market) marketEnable = true;
-                if (row.ChannelType == ChannelGroupType.Post) postEnable = true;
+                if (row.ChannelGroupType == ChannelGroupType.Market) marketEnable = true;
+                if (row.ChannelGroupType == ChannelGroupType.Post) postEnable = true;
                 ResetRowPercent(row);
             });
             set.BizCustomer.MarketEnable = marketEnable;
@@ -67,7 +67,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
                 if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Hitrust)
                     message.AddCustErrorMessage(MessageCode.Code1019, ResxManage.GetDescription(BizCustType.Hitrust));
             }
-            if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.Percent > 0m))
+            if (set.BizCustomerFeeDetail.Any(p => p.BankFeeType == BankFeeType.TotalFee && p.IntroPercent > 0m))
             {
                 if (set.BizCustomer.IntroCustomerCode.IsNullOrEmpty() || set.BizCustomer.IntroCustomer.BizCustType != BizCustType.Introducer)
                     message.AddCustErrorMessage(MessageCode.Code1019, ResxManage.GetDescription(BizCustType.Introducer));
@@ -98,7 +98,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <param name="row"></param>
         private static void ResetRowPercent(BizCustomerFeeDetailModel row)
         {
-            if (row.BankFeeType != BankFeeType.TotalFee) row.Percent = 0;
+            if (row.BankFeeType != BankFeeType.TotalFee) row.IntroPercent = 0;
         }
         #endregion
         #endregion
