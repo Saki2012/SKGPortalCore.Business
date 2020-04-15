@@ -379,11 +379,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (receipt.ToBillNo.IsNullOrEmpty()) return;
             switch (receipt.BillProgId)
             {
+                case SystemCP.ProgId_AutoDebitBill:
+                    PostingAutoDebitBill(dataAccess, receipt);
+                    break;
                 case "Bill"://帳單
                     PostingBill(dataAccess, receipt);
-                    break;
-                case "AutoDebitBill"://約定扣款
-                    PostingAutoDebitBill(dataAccess, receipt);
                     break;
                 case "DepositBill"://入金機
                     PostingDepositBill(dataAccess, receipt);
@@ -425,6 +425,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         private static void PostingChannelEAccount(ApplicationDbContext dataAccess, IUserModel user, ReceiptBillSet set)
         {
+            return;
             if (set.ReceiptBill.ExpectRemitDate == DateTime.MinValue) return;
             LibDataAccess.CreateDataAccess();
             using ChannelEAccountBillRepository repo = new ChannelEAccountBillRepository(dataAccess) { User = user };

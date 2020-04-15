@@ -185,7 +185,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
                     UserName = "管理員",
                     AccountStatus = AccountStatus.Unable,
                 },
-                CustUserRole = new List<CustUserRoleModel>()
+                CustUserRoleList = new List<CustUserRoleModel>()
                 {
                     new CustUserRoleModel() { KeyId = $"{accftt.IDCODE.TrimStart('0')},admin", RoleId = "FrontEndAdmin" }
                 }
