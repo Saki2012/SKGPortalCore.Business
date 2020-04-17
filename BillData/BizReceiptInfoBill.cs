@@ -41,7 +41,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType.Trim().Trim(),
-                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel)?.ChannelId,
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode.Equals(model.Channel))?.ChannelId,
                     TransDate = model.TradeDate.ROCDateToCEDate().AddDays(1),
                     TradeDate = model.TradeDate.ROCDateToCEDate(),
                     PayAmount = model.Amount.ToDecimal(),
@@ -61,7 +61,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType.Trim(),
-                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode.Equals(model.Channel.Trim()))?.ChannelId,
                     TransDate = model.AccountingDay.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3.ToDecimal(),
@@ -81,7 +81,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 {
                     BillNo = "",
                     CollectionTypeId = model.CollectionType.Trim(),
-                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode == model.Channel.Trim())?.ChannelId,
+                    ChannelId = channelMap.FirstOrDefault(p => p.TransCode.Equals(model.Channel.Trim()))?.ChannelId,
                     TransDate = model.TransDate.ToDateTime(),
                     TradeDate = model.PayDate.ToDateTime(),
                     PayAmount = model.Barcode3_Amount.ToDecimal(),

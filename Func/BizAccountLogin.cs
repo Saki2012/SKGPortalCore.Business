@@ -52,7 +52,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
         /// <returns></returns>
         public static bool CheckAccountPasuwado(CustUserSet userSet, string pasuwado)
         {
-            if (null == userSet || pasuwado != userSet.CustUser?.Pasuwado)
+            if (userSet is null || !pasuwado.Equals(userSet.CustUser?.Pasuwado))
             {
                 //查無資料(帳號or密碼錯誤 訊息)
                 return false;

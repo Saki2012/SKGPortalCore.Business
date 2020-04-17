@@ -44,10 +44,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static void CheckIsOverlap(SysMessageLog message, List<CollectionTypeDetailModel> detail)
         {
-            List<CollectionTypeDetailModel> dt = detail.Where(p => detail.Where(
-                    q => q.RowState != RowState.Delete && p.RowId != q.RowId && p.ChannelId == q.ChannelId &&
-                    (p.SRange >= q.SRange && p.SRange <= q.ERange || p.ERange >= q.SRange && p.ERange <= q.ERange)
-                    ).Any()).ToList();
+            List<CollectionTypeDetailModel> dt = detail.Where(p => detail.Where(q =>
+            q.RowState != RowState.Delete &&
+            p.RowId != q.RowId &&
+            p.ChannelId.Equals(q.ChannelId) &&
+            (p.SRange >= q.SRange && p.SRange <= q.ERange || p.ERange >= q.SRange && p.ERange <= q.ERange)
+            ).Any()).ToList();
             string channelName = LibData.Merge(",", false, dt?.Select(p => p.Channel.ChannelName).Distinct().ToArray());
             if (!channelName.IsNullOrEmpty()) message.AddCustErrorMessage(MessageCode.Code1013, channelName);
         }

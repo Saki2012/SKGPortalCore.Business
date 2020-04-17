@@ -54,7 +54,9 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             List<NoBillReceiptRptModel> result = new List<NoBillReceiptRptModel>();
             result.AddRange(
-            dataAccess.Set<ReceiptBillModel>().Where(p => p.CustomerCode == customerCode).Select(p => new NoBillReceiptRptModel()
+            dataAccess.Set<ReceiptBillModel>().Where(p =>
+            (customerCode.IsNullOrEmpty() || p.CustomerCode.Equals(customerCode))
+            ).Select(p => new NoBillReceiptRptModel()
             {
                 BillNo = p.BillNo,
                 VirtualAccountCode = p.VirtualAccountCode,
@@ -70,18 +72,21 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// 獲取手續費報表
         /// </summary>
         /// <param name="dataAccess"></param>
-        public static DataTable GetChannelTotalFeeRpt(ApplicationDbContext dataAccess)
+        public static DataTable GetChannelTotalFeeRpt(ApplicationDbContext dataAccess, string customerId)
         {
             List<ChannelTotalFeeRptModel> lst = new List<ChannelTotalFeeRptModel>();
-            lst.AddRange(dataAccess.Set<ReceiptBillModel>().Select(p => new ChannelTotalFeeRptModel()
-            {
-                CustomerName = p.BizCustomer.Customer.CustomerName,
-                RealAccount = p.BizCustomer.RealAccount,
-                CustomerCode = p.CustomerCode,
-                ChannelId = p.Channel.ChannelId,
-                ChannelName = p.Channel.ChannelName,
-                TotalFee = p.TotalFee,
-            }));
+            lst.AddRange(dataAccess.Set<ReceiptBillModel>().Where(p =>
+            (customerId.IsNullOrEmpty() || p.BizCustomer.CustomerId.Equals(customerId))
+            ).
+                Select(p => new ChannelTotalFeeRptModel()
+                {
+                    CustomerName = p.BizCustomer.Customer.CustomerName,
+                    RealAccount = p.BizCustomer.RealAccount,
+                    CustomerCode = p.CustomerCode,
+                    ChannelId = p.Channel.ChannelId,
+                    ChannelName = p.Channel.ChannelName,
+                    TotalFee = p.TotalFee,
+                }));
             DataTable result = CreateDynamicDataTable(lst);
             Dictionary<string, DataRow> dic = new Dictionary<string, DataRow>();
             DataRow row;
@@ -112,11 +117,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// (舊：銷帳明細資料查詢)
         /// </summary>
         /// <param name="dataAccess"></param>
-        public static List<ReceiptRptModel> GetReceiptRpt(ApplicationDbContext dataAccess, string customerId, string customerCode, DateTime beginDate, DateTime endDate)
+        public static List<ReceiptRptModel> GetReceiptRpt
+        (ApplicationDbContext dataAccess, string customerId, string customerCode, string[] channelIds, DateTime beginDate, DateTime endDate)
         {
             List<ReceiptRptModel> result = new List<ReceiptRptModel>();
             result.AddRange(
-            dataAccess.Set<ReceiptBillModel>().Where().Select(p => new ReceiptRptModel
+            dataAccess.Set<ReceiptBillModel>().Where(p =>
+                (customerId.IsNullOrEmpty() || p.BizCustomer.CustomerId.Equals(customerId)) &&
+                (customerCode.IsNullOrEmpty() || p.CustomerCode.Equals(customerCode)) &&
+                (channelIds.Length == 0 || channelIds.Contains(p.ChannelId)) &&
+                (p.TradeDate >= beginDate) &&
+                (p.TradeDate <= endDate)
+            ).Select(p => new ReceiptRptModel
             {
                 BillNo = p.BillNo,
                 TradeDate = p.TradeDate,
@@ -134,38 +146,88 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <summary>
         /// 獲取總收款報表-客戶別
         /// </summary>
-        public static void GetTotalReceipt_Customer(ApplicationDbContext dataAccess)
+        public static List<TotalReceiptRpt> GetTotalReceipt_Customer(ApplicationDbContext dataAccess, DateTime tradeDate)
         {
-            dataAccess.Set<ReceiptBillModel>().Select(p => new
+            List<TotalReceiptRpt> result = new List<TotalReceiptRpt>();
+            result.AddRange(dataAccess.Set<ReceiptBillModel>().Where(p =>
+           tradeDate.GetFirstDate() <= p.TradeDate && tradeDate.GetLastDate() >= p.TradeDate
+            ).Select(p => new TotalReceiptRpt
             {
-                p.BizCustomer.CustomerId,
-                p.BizCustomer.Customer.CustomerName,
-                p.BizCustomer.AccountDeptId,
-                p.BizCustomer.AccountDept.DeptName,
-                p.BizCustomer.CreateTime,
-                p.TradeDate,
-                p.PayAmount,
-                p.ChannelTotalFee,
-            });
+                CustomerId = p.BizCustomer.CustomerId,
+                CustomerName = p.BizCustomer.Customer.CustomerName,
+                AccountDeptId = p.BizCustomer.AccountDeptId,
+                DeptName = p.BizCustomer.AccountDept.DeptName,
+                CreateTime = p.BizCustomer.CreateTime,
+                TradeDate = p.TradeDate,
+                PayAmount = p.PayAmount,
+                ChannelTotalFee = p.ChannelTotalFee,
+            }));
+            SumListA(result);
+            return result;
         }
         /// <summary>
         /// 獲取總收款報表-通路別
         /// </summary>
-        public static void GetTotalReceipt_Channel(ApplicationDbContext dataAccess)
+        public static DataTable GetTotalReceipt_Channel(ApplicationDbContext dataAccess, DateTime tradeDate)
         {
-            dataAccess.Set<ReceiptBillModel>().Select(p => new
+            List<TotalReceiptRpt> lst = new List<TotalReceiptRpt>();
+            lst.AddRange(dataAccess.Set<ReceiptBillModel>().Where(p =>
+           tradeDate.GetFirstDate() <= p.TradeDate && tradeDate.GetLastDate() >= p.TradeDate
+            ).Select(p => new TotalReceiptRpt
             {
-                p.BizCustomer.CustomerId,
-                p.BizCustomer.Customer.CustomerName,
-                p.BizCustomer.AccountDeptId,
-                p.BizCustomer.AccountDept.DeptName,
-                p.BizCustomer.CreateTime,
-                p.TradeDate,
-                p.Channel.ChannelId,
-                p.Channel.ChannelName,
-                p.PayAmount,
-                p.ChannelTotalFee,
-            });
+                CustomerId = p.BizCustomer.CustomerId,
+                CustomerName = p.BizCustomer.Customer.CustomerName,
+                AccountDeptId = p.BizCustomer.AccountDeptId,
+                DeptName = p.BizCustomer.AccountDept.DeptName,
+                CreateTime = p.BizCustomer.CreateTime,
+                ChannelId = p.Channel.ChannelId,
+                ChannelName = p.Channel.ChannelName,
+                TradeDate = p.TradeDate,
+                PayAmount = p.PayAmount,
+                ChannelTotalFee = p.ChannelTotalFee,
+            }));
+            DataTable result = CreateDynamicDataTable(lst);
+
+            Dictionary<string, DataRow> dic = new Dictionary<string, DataRow>();
+            DataRow row;
+            result.BeginLoadData();
+            foreach (var data in lst)
+            {
+                string key = data.CustomerId;
+                if (!dic.ContainsKey(key))
+                {
+                    row = result.NewRow();
+                    result.Rows.Add(row);
+                    row[nameof(data.CustomerId)] = data.CustomerId;
+                    row[nameof(data.CustomerName)] = data.CustomerName;
+                    row[nameof(data.AccountDeptId)] = data.AccountDeptId;
+                    row[nameof(data.DeptName)] = data.DeptName;
+                    row[nameof(data.CreateTime)] = data.CreateTime;
+                    row[nameof(data.TradeDate)] = data.TradeDate;
+                    row[nameof(data.TotalCount)] = decimal.Zero;
+                    row[nameof(data.PayAmount)] = decimal.Zero;
+                    row[nameof(data.ChannelTotalFee)] = decimal.Zero;
+                    dic.Add(key, row);
+                }
+                row = dic[key];
+
+                string dynamicColNameA = $"{nameof(data.ChannelId)}_{data.ChannelId}_Count";
+                row[dynamicColNameA] = row[dynamicColNameA].ToDecimal() + data.TotalCount;
+                row[nameof(data.TotalCount)] = row[nameof(data.TotalCount)].ToDecimal() + data.TotalCount;
+
+                string dynamicColNameB = $"{nameof(data.ChannelId)}_{data.ChannelId}_Amount";
+                row[dynamicColNameB] = row[dynamicColNameB].ToDecimal() + data.PayAmount;
+                row[nameof(data.PayAmount)] = row[nameof(data.PayAmount)].ToDecimal() + data.PayAmount;
+
+                string dynamicColNameC = $"{nameof(data.ChannelId)}_{data.ChannelId}_Fee";
+                row[dynamicColNameB] = row[dynamicColNameB].ToDecimal() + data.ChannelTotalFee;
+                row[nameof(data.ChannelTotalFee)] = row[nameof(data.ChannelTotalFee)].ToDecimal() + data.ChannelTotalFee;
+            }
+            result.EndLoadData();
+
+            lst.SumListData((x, y) => new { x.ChannelId, y.TotalCount });
+
+            return result;
         }
         #endregion
 
@@ -268,12 +330,12 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         private static void SetFee(ReceiptBillModel receiptBill, BizCustomerSet bizCustomerSet, CollectionTypeSet collectionTypeSet)
         {
-            CollectionTypeDetailModel collectionTypeDetailModel = collectionTypeSet.CollectionTypeDetail.FirstOrDefault(p => p.ChannelId == receiptBill.ChannelId && (p.SRange <= receiptBill.PayAmount && p.ERange >= receiptBill.PayAmount));
-            BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelGroupType == receiptBill.Channel.ChannelGroupType);
-            BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.BankFeeType == BankFeeType.Hitrust_ClearFee_CurMonth || p.BankFeeType == BankFeeType.Hitrust_ClearFee_NextMonth);
+            CollectionTypeDetailModel collectionTypeDetailModel = collectionTypeSet.CollectionTypeDetail.FirstOrDefault(p => p.ChannelId.Equals(receiptBill.ChannelId) && (p.SRange <= receiptBill.PayAmount && p.ERange >= receiptBill.PayAmount));
+            BizCustomerFeeDetailModel bizCustomerFeeDetailModel = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.ChannelGroupType.Equals(receiptBill.Channel.ChannelGroupType));
+            BizCustomerFeeDetailModel hiTrust = bizCustomerSet.BizCustomerFeeDetail.FirstOrDefault(p => p.BankFeeType.Equals(BankFeeType.Hitrust_ClearFee_CurMonth) || p.BankFeeType.Equals(BankFeeType.Hitrust_ClearFee_NextMonth));
             receiptBill.ChargePayType = collectionTypeSet.CollectionType.ChargePayType;
             receiptBill.BankFeeType = bizCustomerFeeDetailModel.BankFeeType;
-            if (receiptBill.BankFeeType == BankFeeType.TotalFee)
+            if (receiptBill.BankFeeType.Equals(BankFeeType.TotalFee))
             {
                 switch (receiptBill.CollectionType.ChargePayType)
                 {
@@ -301,7 +363,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             receiptBill.ChannelRebateFee = collectionTypeDetailModel.ChannelRebateFee;
             receiptBill.ChannelFee = collectionTypeDetailModel.ChannelFee;
             receiptBill.ChannelTotalFee = collectionTypeDetailModel.ChannelTotalFee;
-            receiptBill.TotalFee = receiptBill.BankFeeType == BankFeeType.TotalFee ? bizCustomerFeeDetailModel.Fee : collectionTypeDetailModel.ChannelTotalFee;
+            receiptBill.TotalFee = receiptBill.BankFeeType.Equals(BankFeeType.TotalFee) ? bizCustomerFeeDetailModel.Fee : collectionTypeDetailModel.ChannelTotalFee;
         }
         /// <summary>
         /// 計算 每筆總手續費之「系統商手續費」(內扣)
@@ -337,7 +399,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             DateTime expectRemitDate = receiptBill.ExpectRemitDate;
             if (!receiptBill.Channel.ChannelGroupType.In(ChannelGroupType.Bank, ChannelGroupType.Self))
             {
-                CollectionTypeVerifyPeriodModel period = collectionTypeSet.CollectionTypeVerifyPeriod.Where(p => p.ChannelId == receiptBill.ChannelId).FirstOrDefault();
+                CollectionTypeVerifyPeriodModel period = collectionTypeSet.CollectionTypeVerifyPeriod.Where(p => p.ChannelId.Equals(receiptBill.ChannelId)).FirstOrDefault();
 
                 switch (period?.PayPeriodType)
                 {
@@ -549,11 +611,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         private static void PostingChannelEAccount(ApplicationDbContext dataAccess, IUserModel user, ReceiptBillSet set)
         {
             return;
-            if (set.ReceiptBill.ExpectRemitDate == DateTime.MinValue) return;
+            if (set.ReceiptBill.ExpectRemitDate.Equals(DateTime.MinValue)) return;
             LibDataAccess.CreateDataAccess();
             using ChannelEAccountBillRepository repo = new ChannelEAccountBillRepository(dataAccess) { User = user };
-            ChannelEAccountBillModel channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
-            if (null == channelEAccount) channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().Local.FirstOrDefault(p => p.ChannelId == set.ReceiptBill.ChannelId && p.CollectionTypeId == set.ReceiptBill.CollectionTypeId && p.ExpectRemitDate == set.ReceiptBill.ExpectRemitDate);
+            ChannelEAccountBillModel channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().FirstOrDefault(p => p.ChannelId.Equals(set.ReceiptBill.ChannelId) && p.CollectionTypeId.Equals(set.ReceiptBill.CollectionTypeId) && p.ExpectRemitDate.Equals(set.ReceiptBill.ExpectRemitDate));
+            if (null == channelEAccount) channelEAccount = dataAccess.Set<ChannelEAccountBillModel>().Local.FirstOrDefault(p => p.ChannelId.Equals(set.ReceiptBill.ChannelId) && p.CollectionTypeId.Equals(set.ReceiptBill.CollectionTypeId) && p.ExpectRemitDate.Equals(set.ReceiptBill.ExpectRemitDate));
             ChannelEAccountBillSet accountSet;
             if (null == channelEAccount)
             {
@@ -561,7 +623,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 channelEAccount = repo.Create(accountSet).ChannelEAccountBill;
             }
             accountSet = repo.QueryData(new object[] { channelEAccount.BillNo });
-            if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo == set.ReceiptBill.BillNo).Count() == 0)
+            if (dataAccess.Set<ChannelEAccountBillDetailModel>().Where(p => p.ReceiptBillNo.Equals(set.ReceiptBill.BillNo)).Count() == 0)
                 accountSet.ChannelEAccountBillDetail.Add(new ChannelEAccountBillDetailModel() { BillNo = accountSet.ChannelEAccountBill.BillNo, ReceiptBillNo = set.ReceiptBill.BillNo, RowState = RowState.Insert });
             repo.Update(new object[] { accountSet.ChannelEAccountBill.BillNo }, accountSet);
         }
@@ -587,7 +649,37 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         #endregion
 
         #region Func
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lst"></param>
+        private static void SumListA(List<TotalReceiptRpt> lst)
+        {
+            Dictionary<string, TotalReceiptRpt> dic = new Dictionary<string, TotalReceiptRpt>();
+            string key;
+            for (int i = lst.Count - 1; i >= 0; i--)
+            {
+                var data = lst[i];
+                key = data.CustomerId;
+                if (!dic.ContainsKey(key))
+                {
+                    data.TotalCount++;
+                    dic.Add(key, data);
+                }
+                else
+                {
+                    dic[key].TotalCount++;
+                    dic[key].PayAmount += data.PayAmount;
+                    dic[key].ChannelTotalFee += data.ChannelTotalFee;
+                    lst.Remove(data);
+                }
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lst"></param>
+        /// <returns></returns>
         private static DataTable CreateDynamicDataTable(List<ChannelTotalFeeRptModel> lst)
         {
             lst.Sort((x, y) => { return x.ChannelId.CompareTo(y.ChannelId); });
@@ -622,7 +714,62 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             }
             return result;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lst"></param>
+        /// <returns></returns>
+        private static DataTable CreateDynamicDataTable(List<TotalReceiptRpt> lst)
+        {
+            lst.Sort((x, y) => { return x.ChannelId.CompareTo(y.ChannelId); });
+            DataTable result = new DataTable();
+            string propName;
+            foreach (var prop in typeof(TotalReceiptRpt).GetProperties())
+            {
+                propName = prop.Name;
+                switch (propName)
+                {
+                    case nameof(TotalReceiptRpt.ChannelId):
+                    case nameof(TotalReceiptRpt.ChannelName):
+                        break;
+                    default:
+                        {
+                            DataColumn col = new DataColumn(propName)
+                            { Caption = ResxManage.GetDescription(prop) };
+                            result.Columns.Add(col);
+                        }
+                        break;
+                }
+            }
+            foreach (var m in lst)
+            {
+                string dynamicColName = $"{nameof(m.ChannelId)}_{m.ChannelId}_Count";
+                if (!result.Columns.Contains(dynamicColName))
+                {
+                    DataColumn col = new DataColumn(dynamicColName)
+                    { Caption = m.ChannelName };
+                    result.Columns.Add(col);
+                }
+                dynamicColName = $"{nameof(m.ChannelId)}_{m.ChannelId}_Amount";
+                if (!result.Columns.Contains(dynamicColName))
+                {
+                    DataColumn col = new DataColumn(dynamicColName)
+                    { Caption = m.ChannelName };
+                    result.Columns.Add(col);
+                }
+
+                dynamicColName = $"{nameof(m.ChannelId)}_{m.ChannelId}_Fee";
+                if (!result.Columns.Contains(dynamicColName))
+                {
+                    DataColumn col = new DataColumn(dynamicColName)
+                    { Caption = m.ChannelName };
+                    result.Columns.Add(col);
+                }
+            }
+            return result;
+        }
         #endregion
+
         #endregion
     }
 }

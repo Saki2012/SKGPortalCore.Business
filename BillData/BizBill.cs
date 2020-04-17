@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using OfficeOpenXml;
-using OfficeOpenXml.Table;
-using pdftron.PDF;
-using pdftron.SDF;
-using SKGPortalCore.Data;
+﻿using SKGPortalCore.Data;
 using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.System;
-using SKGPortalCore.Model.SystemTable;
-using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
-using System.Linq;
 using SKGPortalCore.Model.Report;
+using SKGPortalCore.Model.System;
+using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
@@ -55,36 +48,41 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         public static List<BillPayProgressRptModel> GetBillPayProgressRpt(ApplicationDbContext dataAccess, string customerCode, string billTermId)
         {
             List<BillPayProgressRptModel> result = new List<BillPayProgressRptModel>();
-            result.AddRange(dataAccess.Set<BillModel>().Where(p => p.CustomerCode == customerCode && p.BillTermId == billTermId && p.PayStatus == PayStatus.Unpaid)
-                .Select(p => new BillPayProgressRptModel
-                {
-                    BillNo = p.BillNo,
-                    PayEndDate = p.PayEndDate,
-                    PayerId = p.Payer.PayerId,
-                    PayerName = p.Payer.PayerName,
-                    PayerType = ResxManage.GetDescription(p.Payer.PayerType),
-                    VirtualAccountCode = p.VirtualAccountCode,
-                    PayStatus = ResxManage.GetDescription(p.PayStatus),
-                    PayAmount = p.PayAmount,
-                    HadPayAmount = p.HadPayAmount,
-                }));
-            result.AddRange(dataAccess.Set<BillReceiptDetailModel>().Where(p => p.Bill.CustomerCode == customerCode && p.Bill.BillTermId == billTermId)
-                .Select(p => new BillPayProgressRptModel
-                {
-                    BillNo = p.BillNo,
-                    PayEndDate = p.Bill.PayEndDate,
-                    PayerId = p.Bill.Payer.PayerId,
-                    PayerName = p.Bill.Payer.PayerName,
-                    PayerType = ResxManage.GetDescription(p.Bill.Payer.PayerType),
-                    VirtualAccountCode = p.Bill.VirtualAccountCode,
-                    PayStatus = ResxManage.GetDescription(p.Bill.PayStatus),
-                    PayAmount = p.Bill.PayAmount,
-                    HadPayAmount = p.Bill.HadPayAmount,
-                    TradeDate = p.ReceiptBill.TradeDate,
-                    ExpectRemitDate = p.ReceiptBill.ExpectRemitDate,
-                    ChannelId = p.ReceiptBill.Channel.ChannelId,
-                    ChannelName = p.ReceiptBill.Channel.ChannelName,
-                }));
+            result.AddRange(dataAccess.Set<BillModel>().Where(p =>
+            (customerCode.IsNullOrEmpty() || p.CustomerCode.Equals(customerCode)) &&
+            (billTermId.IsNullOrEmpty() || p.BillTermId.Equals(billTermId)) &&
+            p.PayStatus.Equals(PayStatus.Unpaid)
+            ).Select(p => new BillPayProgressRptModel
+            {
+                BillNo = p.BillNo,
+                PayEndDate = p.PayEndDate,
+                PayerId = p.Payer.PayerId,
+                PayerName = p.Payer.PayerName,
+                PayerType = ResxManage.GetDescription(p.Payer.PayerType),
+                VirtualAccountCode = p.VirtualAccountCode,
+                PayStatus = ResxManage.GetDescription(p.PayStatus),
+                PayAmount = p.PayAmount,
+                HadPayAmount = p.HadPayAmount,
+            }));
+            result.AddRange(dataAccess.Set<BillReceiptDetailModel>().Where(p =>
+            (customerCode.IsNullOrEmpty() || p.Bill.CustomerCode.Equals(customerCode)) &&
+            (billTermId.IsNullOrEmpty() || p.Bill.BillTermId.Equals(billTermId))
+            ).Select(p => new BillPayProgressRptModel
+            {
+                BillNo = p.BillNo,
+                PayEndDate = p.Bill.PayEndDate,
+                PayerId = p.Bill.Payer.PayerId,
+                PayerName = p.Bill.Payer.PayerName,
+                PayerType = ResxManage.GetDescription(p.Bill.Payer.PayerType),
+                VirtualAccountCode = p.Bill.VirtualAccountCode,
+                PayStatus = ResxManage.GetDescription(p.Bill.PayStatus),
+                PayAmount = p.Bill.PayAmount,
+                HadPayAmount = p.Bill.HadPayAmount,
+                TradeDate = p.ReceiptBill.TradeDate,
+                ExpectRemitDate = p.ReceiptBill.ExpectRemitDate,
+                ChannelId = p.ReceiptBill.Channel.ChannelId,
+                ChannelName = p.ReceiptBill.Channel.ChannelName,
+            }));
             return result;
         }
         /// <summary>
@@ -96,7 +94,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         public static PayStatus GetPayStatus(decimal payAmount, decimal hasPayAmount)
         {
-            if (hasPayAmount == 0m) return PayStatus.Unpaid;
+            if (hasPayAmount == decimal.Zero) return PayStatus.Unpaid;
             else
             {
                 if (payAmount > hasPayAmount) return PayStatus.UnderPaid;
@@ -117,7 +115,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <returns></returns>
         private static void CheckPayEndDate(SysMessageLog message, BillModel bill)
         {
-            if ((bill.BizCustomer.MarketEnable || bill.BizCustomer.PostEnable) && (bill.PayEndDate == null || bill.PayEndDate == DateTime.MinValue))
+            if ((bill.BizCustomer.MarketEnable || bill.BizCustomer.PostEnable) && (bill.PayEndDate == null || bill.PayEndDate.Equals(DateTime.MinValue)))
                 message.AddCustErrorMessage(MessageCode.Code0001, ResxManage.GetDescription<BillModel>(p => p.PayEndDate));
         }
         /// <summary>
@@ -138,7 +136,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                         message.AddCustErrorMessage(MessageCode.Code1015, bill.CollectionTypeId);
                     else
                     {
-                        CollectionTypeDetailModel colDet = dataAccess.Set<CollectionTypeDetailModel>().FirstOrDefault(p => p.CollectionTypeId == bill.CollectionTypeId && p.SRange <= bill.PayAmount && p.ERange >= bill.PayAmount);
+                        CollectionTypeDetailModel colDet = dataAccess.Set<CollectionTypeDetailModel>().FirstOrDefault(p => p.CollectionTypeId.Equals(bill.CollectionTypeId) && p.SRange <= bill.PayAmount && p.ERange >= bill.PayAmount);
                         if (null == colDet)
                             message.AddCustErrorMessage(MessageCode.Code1016, bill.CollectionTypeId);
                     }

@@ -131,13 +131,13 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
                             try
                             {
                                 GetCustomerInfo(model, bizCustRepo, custRepo, custUserRepo, out BizCustomerSet bizCustomerSet, out CustomerSet customerSet, out CustUserSet custUserSet);
-                                if (null == customerSet) custRepo.Create(BizACCFTT.SetCustomer(model, customerSet));
-                                else custRepo.Update(null,BizACCFTT.SetCustomer(model, customerSet));
+                                if (customerSet is null) custRepo.Create(BizACCFTT.SetCustomer(model, customerSet));
+                                else custRepo.Update(null, BizACCFTT.SetCustomer(model, customerSet));
                                 custRepo.CommitData(FuncAction.Create);
-                                if (null == bizCustomerSet) bizCustRepo.Create(BizACCFTT.SetBizCustomer(model, bizCustomerSet));
-                                else bizCustRepo.Update(null,BizACCFTT.SetBizCustomer(model, bizCustomerSet));
+                                if (bizCustomerSet is null) bizCustRepo.Create(BizACCFTT.SetBizCustomer(model, bizCustomerSet));
+                                else bizCustRepo.Update(null, BizACCFTT.SetBizCustomer(model, bizCustomerSet));
                                 bizCustRepo.CommitData(FuncAction.Create);
-                                if (null == custUserSet)
+                                if (custUserSet is null)
                                 {
                                     custUserRepo.Create(BizACCFTT.AddAdminAccount(model));
                                     custUserRepo.CommitData(FuncAction.Create);

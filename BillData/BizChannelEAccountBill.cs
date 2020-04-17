@@ -19,7 +19,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             set.ChannelEAccountBillDetail.ForEach(row =>
             {
                 payAmount += row.ReceiptBill.PayAmount;
-                channelFee += row.ReceiptBill.ChargePayType == ChargePayType.Deduction ? row.ReceiptBill.ChannelFee : 0m;
+                channelFee += row.ReceiptBill.ChargePayType.Equals(ChargePayType.Deduction) ? row.ReceiptBill.ChannelFee : 0m;
                 count++;
             });
             set.ChannelEAccountBill.Amount = payAmount;

@@ -50,8 +50,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
         /// <returns></returns>
         private static void CheckPayerNoExist(SysMessageLog message, ApplicationDbContext dataAccess, PayerModel payer)
         {
-            if (dataAccess.Set<PayerModel>().Any(p => p.InternalId != payer.InternalId && p.CustomerCode == payer.CustomerCode
-            && p.PayerNo == payer.PayerNo && (p.FormStatus == FormStatus.Saved || p.FormStatus == FormStatus.Approved)))
+            if (dataAccess.Set<PayerModel>().Any(p =>
+             !p.InternalId.Equals(payer.InternalId) &&
+             p.CustomerCode.Equals(payer.CustomerCode) &&
+             p.PayerNo.Equals(payer.PayerNo) &&
+             (p.FormStatus == FormStatus.Saved) || p.FormStatus == FormStatus.Approved))
                 message.AddCustErrorMessage(MessageCode.Code1008, ResxManage.GetDescription<PayerModel>(p => p.PayerNo), payer.PayerNo);
         }
         #endregion
