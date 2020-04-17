@@ -13,6 +13,8 @@ using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.System;
 using SKGPortalCore.Model.SystemTable;
 using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
+using System.Linq;
+using SKGPortalCore.Model.Report;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {
@@ -39,7 +41,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// </summary>
         /// <param name="set"></param>
         /// <param name="action"></param>
-        public static void SetData(BillSet set,string progId,ApplicationDbContext dataAccess)
+        public static void SetData(BillSet set, string progId, ApplicationDbContext dataAccess)
         {
             //SetBillDetail(set.Bill, set.BillDetail);
             SetBillReceiptDetail(set.Bill, set.BillReceiptDetail);
@@ -47,8 +49,44 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             BizVirtualAccountCode.AddVirtualAccountCode(dataAccess, progId, set.Bill.BillNo, set.Bill.VirtualAccountCode);
             ResetPayEndDateAndCollectionType(set.Bill);
         }
-
-
+        /// <summary>
+        /// 獲取帳單繳費進度報表
+        /// </summary>
+        public static List<BillPayProgressRptModel> GetBillPayProgressRpt(ApplicationDbContext dataAccess, string customerCode, string billTermId)
+        {
+            List<BillPayProgressRptModel> result = new List<BillPayProgressRptModel>();
+            result.AddRange(dataAccess.Set<BillModel>().Where(p => p.CustomerCode == customerCode && p.BillTermId == billTermId && p.PayStatus == PayStatus.Unpaid)
+                .Select(p => new BillPayProgressRptModel
+                {
+                    BillNo = p.BillNo,
+                    PayEndDate = p.PayEndDate,
+                    PayerId = p.Payer.PayerId,
+                    PayerName = p.Payer.PayerName,
+                    PayerType = ResxManage.GetDescription(p.Payer.PayerType),
+                    VirtualAccountCode = p.VirtualAccountCode,
+                    PayStatus = ResxManage.GetDescription(p.PayStatus),
+                    PayAmount = p.PayAmount,
+                    HadPayAmount = p.HadPayAmount,
+                }));
+            result.AddRange(dataAccess.Set<BillReceiptDetailModel>().Where(p => p.Bill.CustomerCode == customerCode && p.Bill.BillTermId == billTermId)
+                .Select(p => new BillPayProgressRptModel
+                {
+                    BillNo = p.BillNo,
+                    PayEndDate = p.Bill.PayEndDate,
+                    PayerId = p.Bill.Payer.PayerId,
+                    PayerName = p.Bill.Payer.PayerName,
+                    PayerType = ResxManage.GetDescription(p.Bill.Payer.PayerType),
+                    VirtualAccountCode = p.Bill.VirtualAccountCode,
+                    PayStatus = ResxManage.GetDescription(p.Bill.PayStatus),
+                    PayAmount = p.Bill.PayAmount,
+                    HadPayAmount = p.Bill.HadPayAmount,
+                    TradeDate = p.ReceiptBill.TradeDate,
+                    ExpectRemitDate = p.ReceiptBill.ExpectRemitDate,
+                    ChannelId = p.ReceiptBill.Channel.ChannelId,
+                    ChannelName = p.ReceiptBill.Channel.ChannelName,
+                }));
+            return result;
+        }
         /// <summary>
         /// 獲取銷帳狀態
         /// </summary>
@@ -65,58 +103,6 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 else if (payAmount == hasPayAmount) return PayStatus.PaidComplete;
                 else return PayStatus.OverPaid;
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bills"></param>
-        public static void ExportExcel(List<BillModel> bills)
-        {
-            using ExcelPackage excel = new ExcelPackage();
-            var workSheet = excel.Workbook.Worksheets.Add("Sheet1");
-            workSheet.Cells["A1"].LoadFromCollection(bills, true, TableStyles.Medium12);
-            //...
-            workSheet.Cells[$"A{bills.Count + 2}"].LoadFromCollection(bills, true, TableStyles.Medium12);
-            excel.Save();
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void ReadExcel()
-        {
-            using FileStream fs = new FileStream(@"C:\Read.xlsx", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using ExcelPackage excel = new ExcelPackage(fs);
-            ExcelWorksheet sheet = excel.Workbook.Worksheets[1];//取得Sheet1
-            int startRowNumber = sheet.Dimension.Start.Row;//起始列編號，從1算起
-            int endRowNumber = sheet.Dimension.End.Row;//結束列編號，從1算起
-            int startColumn = sheet.Dimension.Start.Column;//開始欄編號，從1算起
-            int endColumn = sheet.Dimension.End.Column;//結束欄編號，從1算起
-            bool isHeader = true;//有包含標題
-            if (isHeader) startRowNumber += 1;
-            for (int currentRow = startRowNumber; currentRow <= endRowNumber; currentRow++)
-            {
-                ExcelRange range = sheet.Cells[currentRow, startColumn, currentRow, endColumn];//抓出目前的Excel列
-                if (!range.Any(c => !string.IsNullOrEmpty(c.Text)))//這是一個完全空白列(使用者用Delete鍵刪除動作)
-                    continue;//略過此列
-                //讀值
-                string cellValue = sheet.Cells[currentRow, 1].Text;//讀取格式化過後的文字(讀取使用者看到的文字)
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="set"></param>
-        public static void PrintBill(/*BillSet set*/)
-        {
-            using PDFDoc pdfdoc = new PDFDoc();
-            pdftron.PDF.Convert.OfficeToPDF(pdfdoc, $"{ReportTemplate.TemplatePath}{ReportTemplate.BillTemplate}.docx", null);
-            Page pg = pdfdoc.GetPage(1);
-            ContentReplacer replacer = new ContentReplacer();
-            //SetData();
-            //foreach (string key in Dic.Keys) replacer.AddString(key, Dic[key]);
-            replacer.Process(pg);
-            pdfdoc.Save($"{ReportTemplate.TemplateOutputPath}{ReportTemplate.ReceiptTemplate}{ReportTemplate.Resx}.pdf", SDFDoc.SaveOptions.e_linearized);
         }
         #endregion
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using SKGPortalCore.Data;
@@ -7,6 +8,7 @@ using SKGPortalCore.Lib;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.MasterData;
 using SKGPortalCore.Model.MasterData.OperateSystem;
+using SKGPortalCore.Model.Report;
 using SKGPortalCore.Model.System;
 using SKGPortalCore.Model.SystemTable;
 using SKGPortalCore.Repository.BillData;
@@ -43,6 +45,127 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         {
             PostingBillReceiptDetail(dataAccess, newData.ReceiptBill);
             PostingChannelEAccount(dataAccess, user, newData);
+        }
+        /// <summary>
+        /// 獲取無帳單收款資料報表
+        /// </summary>
+        /// <param name="dataAccess"></param>
+        public static List<NoBillReceiptRptModel> NoBillReceiptRpt(ApplicationDbContext dataAccess, string customerCode)
+        {
+            List<NoBillReceiptRptModel> result = new List<NoBillReceiptRptModel>();
+            result.AddRange(
+            dataAccess.Set<ReceiptBillModel>().Where(p => p.CustomerCode == customerCode).Select(p => new NoBillReceiptRptModel()
+            {
+                BillNo = p.BillNo,
+                VirtualAccountCode = p.VirtualAccountCode,
+                TradeDate = p.TradeDate,
+                ExpectRemitDate = p.ExpectRemitDate,
+                ChannelId = p.Channel.ChannelId,
+                ChannelName = p.Channel.ChannelName,
+                HadPayAmount = p.PayAmount
+            }));
+            return result;
+        }
+        /// <summary>
+        /// 獲取手續費報表
+        /// </summary>
+        /// <param name="dataAccess"></param>
+        public static DataTable GetChannelTotalFeeRpt(ApplicationDbContext dataAccess)
+        {
+            List<ChannelTotalFeeRptModel> lst = new List<ChannelTotalFeeRptModel>();
+            lst.AddRange(dataAccess.Set<ReceiptBillModel>().Select(p => new ChannelTotalFeeRptModel()
+            {
+                CustomerName = p.BizCustomer.Customer.CustomerName,
+                RealAccount = p.BizCustomer.RealAccount,
+                CustomerCode = p.CustomerCode,
+                ChannelId = p.Channel.ChannelId,
+                ChannelName = p.Channel.ChannelName,
+                TotalFee = p.TotalFee,
+            }));
+            DataTable result = CreateDynamicDataTable(lst);
+            Dictionary<string, DataRow> dic = new Dictionary<string, DataRow>();
+            DataRow row;
+            result.BeginLoadData();
+            foreach (var data in lst)
+            {
+                string key = data.CustomerCode;
+                if (!dic.ContainsKey(key))
+                {
+                    row = result.NewRow();
+                    result.Rows.Add(row);
+                    row[nameof(data.CustomerCode)] = data.CustomerCode;
+                    row[nameof(data.RealAccount)] = data.RealAccount;
+                    row[nameof(data.CustomerName)] = data.CustomerName;
+                    row[nameof(data.TotalFee)] = decimal.Zero;
+                    dic.Add(key, row);
+                }
+                row = dic[key];
+                string dynamicColName = $"{nameof(data.ChannelId)}_{data.ChannelId}";
+                row[dynamicColName] = row[dynamicColName].ToDecimal() + data.TotalFee;
+                row[nameof(data.TotalFee)] = row[nameof(data.TotalFee)].ToDecimal() + data.TotalFee;
+            }
+            result.EndLoadData();
+            return result;
+        }
+        /// <summary>
+        /// 獲取收款明細報表
+        /// (舊：銷帳明細資料查詢)
+        /// </summary>
+        /// <param name="dataAccess"></param>
+        public static List<ReceiptRptModel> GetReceiptRpt(ApplicationDbContext dataAccess, string customerId, string customerCode, DateTime beginDate, DateTime endDate)
+        {
+            List<ReceiptRptModel> result = new List<ReceiptRptModel>();
+            result.AddRange(
+            dataAccess.Set<ReceiptBillModel>().Where().Select(p => new ReceiptRptModel
+            {
+                BillNo = p.BillNo,
+                TradeDate = p.TradeDate,
+                TransDate = p.TransDate,
+                AccountDeptId = p.BizCustomer.AccountDeptId,
+                HadPayAmount = p.PayAmount,
+                Fee = p.TotalFee,
+                IncomeAmount = p.PayAmount - p.TotalFee,
+                VirtualAccountCode = p.VirtualAccountCode,
+                ChannelId = p.Channel.ChannelId,
+                ChannelName = p.Channel.ChannelName,
+            }));
+            return result;
+        }
+        /// <summary>
+        /// 獲取總收款報表-客戶別
+        /// </summary>
+        public static void GetTotalReceipt_Customer(ApplicationDbContext dataAccess)
+        {
+            dataAccess.Set<ReceiptBillModel>().Select(p => new
+            {
+                p.BizCustomer.CustomerId,
+                p.BizCustomer.Customer.CustomerName,
+                p.BizCustomer.AccountDeptId,
+                p.BizCustomer.AccountDept.DeptName,
+                p.BizCustomer.CreateTime,
+                p.TradeDate,
+                p.PayAmount,
+                p.ChannelTotalFee,
+            });
+        }
+        /// <summary>
+        /// 獲取總收款報表-通路別
+        /// </summary>
+        public static void GetTotalReceipt_Channel(ApplicationDbContext dataAccess)
+        {
+            dataAccess.Set<ReceiptBillModel>().Select(p => new
+            {
+                p.BizCustomer.CustomerId,
+                p.BizCustomer.Customer.CustomerName,
+                p.BizCustomer.AccountDeptId,
+                p.BizCustomer.AccountDept.DeptName,
+                p.BizCustomer.CreateTime,
+                p.TradeDate,
+                p.Channel.ChannelId,
+                p.Channel.ChannelName,
+                p.PayAmount,
+                p.ChannelTotalFee,
+            });
         }
         #endregion
 
@@ -119,7 +242,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         /// <param name="bizCustomerSet"></param>
         private static void SetBizCustomer(ReceiptBillModel receiptBill, BizCustomerModel bizCustomer)
         {
-            receiptBill.Customer = bizCustomer;
+            receiptBill.BizCustomer = bizCustomer;
             receiptBill.CustomerCode = bizCustomer?.CustomerCode;
         }
         /// <summary>
@@ -360,8 +483,8 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
             if (receiptBill.TransDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析傳輸日期。");
             if (receiptBill.ExpectRemitDate.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析預計匯款日。");
             if (receiptBill.PayAmount.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無法解析實繳金額。");
-            if (!(receiptBill.Customer.ChannelIds.Split(',').Contains(receiptBill.ChannelId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收通路。");
-            if (!(receiptBill.Customer.CollectionTypeIds.Split(',').Contains(receiptBill.CollectionTypeId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收類別。");
+            if (!(receiptBill.BizCustomer.ChannelIds.Split(',').Contains(receiptBill.ChannelId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收通路。");
+            if (!(receiptBill.BizCustomer.CollectionTypeIds.Split(',').Contains(receiptBill.CollectionTypeId))) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 未啟用該代收類別。");
             if (receiptBill.ToBillNo.IsNullOrEmpty()) strBuilder.AppendLine($"{i++.ToString().PadLeft(2)}. 無帳單資料。");
             receiptBill.ErrMessage = strBuilder.ToString();
             receiptBill.IsErrData = !receiptBill.ErrMessage.IsNullOrEmpty();
@@ -382,10 +505,10 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
                 case SystemCP.ProgId_AutoDebitBill:
                     PostingAutoDebitBill(dataAccess, receipt);
                     break;
-                case "Bill"://帳單
+                case SystemCP.ProgId_Bill:
                     PostingBill(dataAccess, receipt);
                     break;
-                case "DepositBill"://入金機
+                case SystemCP.ProgId_DepositBill://入金機
                     PostingDepositBill(dataAccess, receipt);
                     break;
             }
@@ -463,6 +586,43 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
         }
         #endregion
 
+        #region Func
+
+        private static DataTable CreateDynamicDataTable(List<ChannelTotalFeeRptModel> lst)
+        {
+            lst.Sort((x, y) => { return x.ChannelId.CompareTo(y.ChannelId); });
+            DataTable result = new DataTable();
+            string propName;
+            foreach (var prop in typeof(ChannelTotalFeeRptModel).GetProperties())
+            {
+                propName = prop.Name;
+                switch (propName)
+                {
+                    case nameof(ChannelTotalFeeRptModel.ChannelId):
+                    case nameof(ChannelTotalFeeRptModel.ChannelName):
+                        break;
+                    default:
+                        {
+                            DataColumn col = new DataColumn(propName)
+                            { Caption = ResxManage.GetDescription(prop) };
+                            result.Columns.Add(col);
+                        }
+                        break;
+                }
+            }
+            foreach (var m in lst)
+            {
+                string dynamicColName = $"{nameof(m.ChannelId)}_{m.ChannelId}";
+                if (!result.Columns.Contains(dynamicColName))
+                {
+                    DataColumn col = new DataColumn(dynamicColName)
+                    { Caption = m.ChannelName };
+                    result.Columns.Add(col);
+                }
+            }
+            return result;
+        }
+        #endregion
         #endregion
     }
 }
