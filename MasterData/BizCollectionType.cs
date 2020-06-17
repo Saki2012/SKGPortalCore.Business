@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+using SKGPortalCore.Core;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.System;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {

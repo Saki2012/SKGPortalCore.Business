@@ -1,7 +1,7 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Core;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.System;
 using System.Collections.Generic;
 using System.Linq;
 

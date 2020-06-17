@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
-using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+using SKGPortalCore.Core;
+using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
+using SKGPortalCore.Core.Model.User;
+using SKGPortalCore.Interface.IRepository.Import;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
-using SKGPortalCore.Model.System;
 using SKGPortalCore.Repository.MasterData;
-using SKGPortalCore.Repository.MasterData.User;
 using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
 {
-    public class ACCFTTImport : IImportData
+    public sealed class ACCFTTImport : IImportData
     {
         #region Property
         /// <summary>
@@ -49,16 +51,17 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         /// <summary>
         /// 原資料
         /// </summary>
-        private string SrcFile => $"{SrcPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}";
+        private string SrcFile => $"{SrcPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}";
         /// <summary>
         /// 成功資料
         /// </summary>
-        private string SuccessFile => $"{SuccessPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}{LibData.GenRandomString(3)}";
+        private string SuccessFile => $"{SuccessPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}{LibData.GenRandomString(3)}";
         /// <summary>
         /// 失敗資料
         /// </summary>
-        private string FailFile => $"{FailPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}{LibData.GenRandomString(3)}";
+        private string FailFile => $"{FailPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}{LibData.GenRandomString(3)}";
         #endregion
+
         #region Construct
         public ACCFTTImport(ApplicationDbContext dataAccess, SysMessageLog messageLog = null)
         {
@@ -69,6 +72,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
             Directory.CreateDirectory(FailPath);
         }
         #endregion
+
         #region Implement
         /// <summary>
         /// 讀服務申請書主檔
@@ -100,14 +104,11 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         /// <returns></returns>
         IList IImportData.AnalyzeFile(Dictionary<int, string> sources)
         {
+            if (null == sources) return null;
             List<ACCFTT> result = new List<ACCFTT>();
             DateTime now = DateTime.Now;
-            string importBatchNo = $"ACCFTT{now.ToString("yyyyMMddhhmmss")}";
-            foreach (int line in sources.Keys)
-            {
-                result.Add(new ACCFTT() { Id = line, Source = sources[line], ImportBatchNo = importBatchNo });
-            }
-
+            string importBatchNo = $"ACCFTT{now.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture)}";
+            foreach (int line in sources.Keys) result.Add(new ACCFTT() { Id = line, Source = sources[line], ImportBatchNo = importBatchNo });
             return result;
         }
         /// <summary>
@@ -117,6 +118,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         void IImportData.CreateData(IList modelSources)
         {
             List<ACCFTT> srcs = modelSources as List<ACCFTT>;
+            if (null == srcs) return;
             using BizCustomerRepository bizCustRepo = new BizCustomerRepository(DataAccess) { Message = Message, User = SystemOperator.SysOperator };
             using CustomerRepository custRepo = new CustomerRepository(DataAccess) { Message = Message, User = SystemOperator.SysOperator };
             using CustUserRepository custUserRepo = new CustUserRepository(DataAccess) { Message = Message, User = SystemOperator.SysOperator };
@@ -147,6 +149,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
                             catch
                             {
                                 DataAccess.Database.RollbackTransaction();
+                                throw;
                             }
                         }
                         break;
@@ -173,6 +176,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
             }
         }
         #endregion
+
         #region Private
         /// <summary>
         /// 獲取客戶資料

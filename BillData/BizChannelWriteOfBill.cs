@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SKGPortalCore.Lib;
+using SKGPortalCore.Core.Libary;
 using SKGPortalCore.Model.BillData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
@@ -8,7 +8,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
     /// <summary>
     /// 通路帳款核銷單-商業邏輯
     /// </summary>
-     internal static class BizChannelWriteOfBill
+    internal static class BizChannelWriteOfBill
     {
         #region Public
         public static void CheckData(ChannelWriteOfBillSet set)

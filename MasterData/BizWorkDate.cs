@@ -6,12 +6,12 @@ using SKGPortalCore.Model.MasterData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
 {
-    internal class BizWorkDate
+    internal static class BizWorkDate
     {
         /// <summary>
         /// 同步政府行政機關辦公日曆表
         /// </summary>
-        public WorkDateModel[] SyncWorkDate()
+        public static WorkDateModel[] SyncWorkDate()
         {
             string url = "http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-000077-002";
             WebRequest request = WebRequest.Create(url);

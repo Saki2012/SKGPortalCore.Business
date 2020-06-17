@@ -1,6 +1,6 @@
-﻿using SKGPortalCore.Data;
+﻿using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.LibEnum;
 using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.System;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {

@@ -1,5 +1,5 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.Report;
 using System;

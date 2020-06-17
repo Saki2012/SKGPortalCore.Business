@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+using SKGPortalCore.Core;
+using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
+using SKGPortalCore.Core.Model.User;
+using SKGPortalCore.Interface.IRepository.Import;
 using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.MasterData.OperateSystem;
 using SKGPortalCore.Model.SourceData;
-using SKGPortalCore.Model.System;
 using SKGPortalCore.Repository.BillData;
-using SKGPortalCore.Repository.MasterData;
 using SKGPortalCore.Repository.SKGPortalCore.Business.BillData;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
@@ -21,7 +20,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
     /// <summary>
     /// 資訊流導入-銀行
     /// </summary>
-    public class ReceiptInfoImportBANK : IImportData
+    public sealed class ReceiptInfoImportBANK : IImportData
     {
         #region Propety
         /// <summary>
@@ -55,17 +54,18 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         /// <summary>
         /// 原資料
         /// </summary>
-        private string SrcFile => $"{SrcPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}";
+        private string SrcFile => $"{SrcPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}";
         /// <summary>
         /// 成功資料
         /// </summary>
-        private string SuccessFile => $"{SuccessPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}{LibData.GenRandomString(3)}";
+        private string SuccessFile => $"{SuccessPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}{LibData.GenRandomString(3)}";
         /// <summary>
         /// 失敗資料
         /// </summary>
-        private string FailFile => $"{FailPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd")}{LibData.GenRandomString(3)}";
+        private string FailFile => $"{FailPath}{FileName}.{DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}{LibData.GenRandomString(3)}";
 
         #endregion
+
         #region Construct
         public ReceiptInfoImportBANK(ApplicationDbContext dataAccess, SysMessageLog messageLog = null)
         {
@@ -76,6 +76,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
             Directory.CreateDirectory(FailPath);
         }
         #endregion
+
         #region Implement
         /// <summary>
         /// 
@@ -118,7 +119,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Import
         {
             List<ReceiptInfoBillBankModel> result = new List<ReceiptInfoBillBankModel>();
             DateTime now = DateTime.Now;
-            string importBatchNo = $"BANK{now.ToString("yyyyMMddhhmmss")}";
+            string importBatchNo = $"BANK{now.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture)}";
             foreach (int line in sources.Keys)
             {
                 result.Add(new ReceiptInfoBillBankModel() { Id = line, Source = sources[line], ImportBatchNo = importBatchNo });

@@ -1,8 +1,8 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
 using SKGPortalCore.Model.BillData;
 using SKGPortalCore.Model.Report;
-using SKGPortalCore.Model.System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +19,7 @@ namespace SKGPortalCore.Repository.SKGPortalCore.Business.Report
             result.AddRange(dataAccess.Set<BillModel>().Where(p =>
             (customerCode.IsNullOrEmpty() || p.CustomerCode.Equals(customerCode)) &&
             (billTermId.IsNullOrEmpty() || p.BillTermId.Equals(billTermId)) &&
-            p.PayStatus.Equals(PayStatus.Unpaid)
+            p.PayStatus == PayStatus.Unpaid
             ).Select(p => new BillPayProgressRptModel
             {
                 BillNo = p.BillNo,

@@ -1,13 +1,13 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
-using SKGPortalCore.Model.BillData;
-using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.Report;
-using SKGPortalCore.Model.System;
-using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SKGPortalCore.Core;
+using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
+using SKGPortalCore.Model.BillData;
+using SKGPortalCore.Model.MasterData;
+using SKGPortalCore.Repository.SKGPortalCore.Business.Func;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.BillData
 {

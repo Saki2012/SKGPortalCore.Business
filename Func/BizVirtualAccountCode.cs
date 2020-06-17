@@ -1,10 +1,9 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
-using SKGPortalCore.Model.System;
-using SKGPortalCore.Model.SystemTable;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using SKGPortalCore.Core;
+using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
+using SKGPortalCore.Core.SystemTable;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.Func
 {

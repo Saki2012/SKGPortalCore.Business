@@ -1,7 +1,8 @@
-﻿using SKGPortalCore.Data;
-using SKGPortalCore.Lib;
+﻿using SKGPortalCore.Core;
+using SKGPortalCore.Core.DB;
+using SKGPortalCore.Core.Libary;
+using SKGPortalCore.Core.LibEnum;
 using SKGPortalCore.Model.MasterData;
-using SKGPortalCore.Model.System;
 using System.Linq;
 
 namespace SKGPortalCore.Repository.SKGPortalCore.Business.MasterData
